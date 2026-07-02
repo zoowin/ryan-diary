@@ -823,9 +823,6 @@ function initMainApp() {
     document.getElementById('headerChildMeta').textContent = (child.grade || '') + ' · ' + (child.age || '') + '岁';
   }
 
-  // Check if sample data needed
-  if (DATA.getRecords().length === 0) loadSampleData();
-
   updateRoleUI();
   renderAll();
   checkProxyStatus();
@@ -1958,7 +1955,6 @@ function resetAllData() {
   if (!confirm('确定清除当前孩子的全部数据？此操作不可恢复！')) return;
   ['records','achievements','settings'].forEach(k => localStorage.removeItem(DATA.sessionKey(k)));
   showToast('数据已清除');
-  loadSampleData();
   renderAll();
 }
 
