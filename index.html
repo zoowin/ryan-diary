@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小芽成长记录 · 全维度育儿日记</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f0ebe3;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding:20px}
+.phone{width:375px;min-height:700px;background:#faf8f5;border-radius:28px;box-shadow:0 8px 32px rgba(0,0,0,.12);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.phone-header{background:#6b8f71;color:#fff;padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between}
+.phone-header .title{font-size:15px;font-weight:600}
+.phone-header .role-badge{font-size:11px;background:rgba(255,255,255,.25);padding:4px 10px;border-radius:12px;display:flex;align-items:center;gap:4px;cursor:pointer}
+.phone-body{flex:1;overflow-y:auto;padding-bottom:70px;-webkit-overflow-scrolling:touch}
+.tab-bar{position:absolute;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-around;z-index:10}
+.tab-item{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#999;padding:6px 0;cursor:pointer;transition:color .2s;border:none;background:none;width:20%}
+.tab-item.active{color:#6b8f71}
+.tab-item .icon{font-size:20px;line-height:1}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+.section-title{font-size:14px;font-weight:600;color:#3d3d3d;padding:16px 16px 8px}
+.card{margin:8px 16px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.card-role{display:flex;align-items:center;gap:6px;font-size:12px;color:#888}
+.card-role .avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px}
+.card-date{font-size:11px;color:#bbb}
+.card-type-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
+.card-content{font-size:13px;color:#444;line-height:1.6}
+.card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.meta-tag{font-size:10px;padding:3px 8px;border-radius:6px;background:#f5f2ed;color:#888}
+.meta-tag.good{background:#e8f5e9;color:#388e3c}
+.meta-tag.warn{background:#fff3e0;color:#e65100}
+.meta-tag.info{background:#e3f2fd;color:#1565c0}
+
+.summary-row{display:flex;gap:8px;margin:8px 16px}
+.summary-item{flex:1;background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.summary-item .num{font-size:22px;font-weight:700;color:#6b8f71}
+.summary-item .label{font-size:10px;color:#999;margin-top:2px}
+
+.chart-box{margin:8px 16px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.chart-box canvas{max-height:220px}
+
+.btn{display:inline-block;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:500;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:#6b8f71;color:#fff}
+.btn-primary:hover{background:#5a7d60}
+.btn-outline{background:#fff;color:#6b8f71;border:1px solid #6b8f71}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-block{display:block;width:100%;text-align:center}
+.btn-danger{background:#e74c3c;color:#fff}
+.btn-danger:hover{background:#c0392b}
+
+.template-grid{display:flex;gap:10px;margin:0 0 14px;padding:2px 16px 8px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.template-grid::-webkit-scrollbar{display:none}
+.template-item{flex:0 0 auto;width:110px;background:#fff;border-radius:14px;padding:0;text-align:center;cursor:pointer;transition:transform .2s,box-shadow .2s;font-size:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);scroll-snap-align:start}
+.template-item:active{transform:scale(.96)}
+.template-item .icon{font-size:30px;display:block;margin:10px 0 4px}
+.template-item .label{font-size:12px;color:#333;font-weight:600;margin-bottom:2px}
+.template-item .hint{font-size:9px;color:#999;padding-bottom:10px}
+
+.upload-zone{margin:8px 16px;border:2px dashed #ddd;border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s;background:#fafaf7}
+.upload-zone:hover{border-color:#6b8f71}
+.upload-zone .icon{font-size:32px;margin-bottom:6px}
+.upload-zone .text{font-size:12px;color:#999}
+.upload-zone .hint{font-size:10px;color:#ccc;margin-top:2px}
+
+.quick-actions{display:flex;gap:8px;padding:0;margin-bottom:10px}
+.action-btn{flex:1;background:#fff;border-radius:14px;padding:14px 4px 12px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.05);transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column;align-items:center;gap:4px;border-top:3px solid var(--accent)}
+.action-btn:active{transform:scale(.95);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.action-icon{font-size:28px;line-height:1}
+.action-label{font-size:12px;font-weight:600;color:#333}
+.action-sub{font-size:9px;color:#aaa}
+.link-input-row{display:flex;gap:6px;margin-bottom:10px}
+.media-previews{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.media-preview-item{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;border:1.5px solid #eee;flex-shrink:0}
+.media-preview-item img{width:100%;height:100%;object-fit:cover}
+.media-preview-item video{width:100%;height:100%;object-fit:cover}
+.media-preview-item .media-remove{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:11px;line-height:18px;text-align:center;cursor:pointer;font-weight:700}
+.media-add-btn{width:64px;height:64px;border-radius:10px;border:1.5px dashed #ccc;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;color:#aaa;flex-shrink:0;transition:border-color .2s}
+.media-add-btn:hover{border-color:#6b8f71}
+
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-size:11px;color:#888;margin-bottom:3px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;outline:none;font-family:inherit;background:#fafaf7}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#6b8f71}
+.form-row{display:flex;gap:8px}
+.form-row .form-group{flex:1}
+
+.achievement-card{display:flex;align-items:center;gap:10px;padding:10px;margin:4px 0;border-radius:10px;background:#faf8f5}
+.achievement-card .badge{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.achievement-card .badge.unlocked{background:#e8f5e9}
+.achievement-card .badge.locked{background:#f0f0f0;filter:grayscale(1);opacity:.5}
+.achievement-card .info{flex:1;font-size:12px}
+.achievement-card .info .name{font-weight:600;color:#3d3d3d}
+.achievement-card .info .desc{font-size:10px;color:#aaa;margin-top:2px}
+.achievement-card .info .date{font-size:9px;color:#bbb}
+
+.filter-row{display:flex;gap:6px;margin:0 16px 8px;overflow-x:auto;padding-bottom:4px}
+.filter-chip{font-size:11px;padding:4px 10px;border-radius:12px;border:1px solid #e0e0e0;background:#fff;color:#888;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.filter-chip.active{background:#6b8f71;color:#fff;border-color:#6b8f71}
+
+.settings-section{margin-bottom:16px}
+.settings-section h4{font-size:13px;color:#666;margin-bottom:8px;font-weight:500}
+.role-pill{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;margin:2px 4px;border-radius:12px;font-size:11px;background:#f0f0f0;color:#888;cursor:pointer}
+.role-pill.active{background:#e8f5e9;color:#388e3c}
+.role-pill .icon{font-size:14px}
+
+.empty-state{text-align:center;padding:40px 20px;color:#ccc}
+.empty-state .icon{font-size:48px;margin-bottom:8px}
+.empty-state .text{font-size:13px}
+
+.toast{position:absolute;top:20px;left:50%;transform:translateX(-50%);background:#3d3d3d;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* ── Modal / Bottom Sheet ── */
+.modal-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:90;align-items:flex-end;justify-content:center;transition:opacity .25s}
+.modal-overlay.show{display:flex}
+.modal{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:18px 18px 0 0;padding:16px 16px 24px;max-height:78%;overflow-y:auto;transform:translateY(100%);transition:transform .28s ease-out;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal h3{font-size:16px;font-weight:600;color:#3d3d3d;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+
+/* ── Login / Register Overlay ── */
+.full-overlay{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:#faf8f5;z-index:50;flex-direction:column;overflow-y:auto}
+.full-overlay.show{display:flex}
+.login-header{background:linear-gradient(135deg,#8fbc8f,#6b8f71);color:#fff;padding:32px 20px 24px;text-align:center}
+.login-header .logo{font-size:48px;margin-bottom:8px}
+.login-header h2{font-size:18px;font-weight:600;margin-bottom:4px}
+.login-header .sub{font-size:12px;opacity:.85}
+.login-body{flex:1;padding:24px 20px}
+.login-body .input-group{margin-bottom:14px}
+.login-body .input-group label{display:block;font-size:12px;color:#888;margin-bottom:4px}
+.login-body .input-group input{width:100%;padding:10px 12px;border:1.5px solid #e0d5c8;border-radius:10px;font-size:14px;outline:none;background:#fff;font-family:inherit}
+.login-body .input-group input:focus{border-color:#6b8f71}
+.login-body .btn-lg{padding:12px;font-size:14px;border-radius:10px;margin-top:4px}
+.login-switch{text-align:center;margin-top:14px;font-size:12px;color:#999}
+.login-switch a{color:#6b8f71;cursor:pointer;text-decoration:underline}
+
+/* ── Family / Child Selector ── */
+.selector-item{display:flex;align-items:center;gap:12px;padding:12px;margin:6px 0;background:#fff;border-radius:10px;border:1.5px solid #eee;cursor:pointer;transition:border-color .2s}
+.selector-item:hover,.selector-item.selected{border-color:#6b8f71}
+.selector-item .sel-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.selector-item .sel-info{flex:1}
+.selector-item .sel-info .sel-name{font-size:14px;font-weight:600;color:#3d3d3d}
+.selector-item .sel-info .sel-meta{font-size:11px;color:#aaa;margin-top:2px}
+.selector-item .sel-arrow{color:#ccc;font-size:16px}
+
+.child-picker{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.child-chip{padding:8px 14px;border-radius:20px;border:1.5px solid #e0e0e0;background:#fff;font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+.child-chip.selected{background:#e8f5e9;border-color:#6b8f71;color:#388e3c;font-weight:600}
+.child-chip .cc-icon{font-size:18px}
+
+.divider-text{display:flex;align-items:center;gap:10px;margin:16px 0;color:#ccc;font-size:11px}
+.divider-text::before,.divider-text::after{content:'';flex:1;height:1px;background:#eee}
+
+.manage-link{text-align:center;margin-top:12px;font-size:12px}
+.manage-link a{color:#6b8f71;cursor:pointer;text-decoration:none}
+.manage-link a:hover{text-decoration:underline}
+
+.family-card{background:#fff;border-radius:12px;padding:14px;margin:8px 0;border:1px solid #eee}
+.family-card .fc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.family-card .fc-name{font-size:14px;font-weight:600;color:#3d3d3d}
+.family-card .fc-actions{display:flex;gap:4px}
+
+/* ── Role Login Buttons ── */
+.login-role-btn{border:2px solid #e0d5c8;border-radius:14px;padding:14px 10px;background:#fff;text-align:center;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.login-role-btn:hover,.login-role-btn:active{border-color:#6b8f71;background:#f0f7f0}
+.login-role-btn .lricon{font-size:32px;line-height:1}
+.login-role-btn .lrlabel{font-size:13px;font-weight:600;color:#3d3d3d}
+.login-role-btn .lrbade{bottom:-7px;font-size:9px;color:#6b8f71;font-weight:700}
+.login-role-btn .lrhint{font-size:9px;color:#aaa}
+.login-back-link{text-align:center;margin-top:10px}
+.login-back-link a{color:#6b8f71;cursor:pointer;text-decoration:none;font-size:12px}
+.login-back-link a:hover{text-decoration:underline}
+.setup-hint{font-size:11px;color:#888;margin-bottom:16px;line-height:1.5}
+
+/* ── Compact Timeline Cards ── */
+.card-compact{padding:10px 12px;margin:4px 12px}
+.card-compact .card-content{font-size:12px;max-height:48px;overflow:hidden}
+.date-divider{text-align:center;font-size:11px;color:#bbb;padding:8px 0 4px}
+.card-actions{display:flex;gap:4px;margin-left:auto;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="phone" id="app">
+
+  <!-- ═══════ LOGIN OVERLAY ═══════ -->
+  <div class="full-overlay show" id="loginOverlay">
+    <div class="login-header">
+      <div class="logo" id="loginLogo">👨‍👩‍👧‍👦</div>
+      <h2 id="loginTitle">小芽成长记录</h2>
+      <div class="sub" id="loginSub">选择角色进入</div>
+    </div>
+    <div class="login-body" id="loginBody">
+      <!-- Role grid -->
+      <div id="roleGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px"></div>
+      <!-- Password prompt -->
+      <div id="pwPrompt" style="display:none">
+        <div class="input-group">
+          <label id="pwPromptLabel">输入密码</label>
+          <input type="password" id="loginPassword" placeholder="请输入密码" onkeydown="if(event.key==='Enter')handleRoleLogin()">
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="handleRoleLogin()">确 认</button>
+        <div class="login-back-link"><a onclick="showRoleGrid()">← 返回选择角色</a></div>
+        <div id="loginError" style="color:#e74c3c;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+      </div>
+      <!-- First-time setup -->
+      <div id="setupPrompt" style="display:none">
+        <div class="setup-hint">🎉 欢迎使用！请先设置管理员密码和孩子的信息。</div>
+        <div class="input-group">
+          <label>家庭名称</label>
+          <input type="text" id="setupFamilyName" placeholder="如：小芽的家" value="小芽的家">
+        </div>
+        <div class="input-group">
+          <label>管理员密码（非常重要）</label>
+          <input type="password" id="setupAdminPassword" placeholder="设置管理员密码（至少4位）">
+        </div>
+        <div class="input-group">
+          <label>确认密码</label>
+          <input type="password" id="setupConfirmPwd" placeholder="再次输入密码">
+        </div>
+        <div class="input-group">
+          <label>孩子姓名</label>
+          <input type="text" id="setupChildName" placeholder="如：皓皓" value="皓皓">
+        </div>
+        <div class="input-group">
+          <label>孩子昵称</label>
+          <input type="text" id="setupChildNick" placeholder="如：小芽" value="小芽">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>年级</label>
+            <select id="setupChildGrade">
+              <option>幼儿园</option><option selected>小学一年级</option><option>小学二年级</option><option>小学三年级</option><option>小学四年级</option><option>小学五年级</option><option>小学六年级</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>年龄</label>
+            <input type="number" id="setupChildAge" value="7">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>学号</label>
+          <select id="setupStudentNumber" style="width:100%;height:44px;border-radius:10px;border:1.5px solid #e0d5c8;padding:0 12px;font-size:14px;background:#fff">
+            <!-- Populated by init -->
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="handleSetup()">创建家庭空间</button>
+        <div id="setupError" style="color:#e74c3c;font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ CHILD PICKER (simplified) ═══════ -->
+  <div class="full-overlay" id="selectorOverlay">
+    <div class="login-header">
+      <div class="logo">👶</div>
+      <h2 id="selectorGreeting">你好！</h2>
+      <div class="sub">选择一个孩子开始记录</div>
+    </div>
+    <div class="login-body">
+      <div id="childPicker" class="child-picker"></div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="enterAppDirect()" style="margin-top:12px">进入主页</button>
+      <div class="manage-link"><a onclick="DATA.clearSession();document.getElementById('selectorOverlay').classList.remove('show');showRoleGrid()">退出登录</a></div>
+    </div>
+  </div>
+
+  <!-- ═══════ MAIN APP ═══════ -->
+  <div class="phone-header" id="mainHeader" style="display:none">
+    <span class="title">🌱 小芽成长记录</span>
+    <span class="role-badge" onclick="showRoleSwitchDialog()">
+      <span id="roleIcon">👨</span><span id="roleLabel">爸爸</span>
+    </span>
+  </div>
+  <div class="phone-body" id="phoneBody" style="display:none">
+
+    <!-- TAB: 动态 -->
+    <div class="tab-pane active" id="pane-timeline">
+      <div class="card" style="margin-top:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#8fbc8f,#6b8f71);display:flex;align-items:center;justify-content:center;font-size:22px">🌱</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#3d3d3d" id="headerChildName">皓皓 的成长日记</div>
+            <div style="font-size:11px;color:#aaa" id="headerChildMeta">小学一年级 · 7岁</div>
+          </div>
+        </div>
+      </div>
+      <div class="summary-row">
+        <div class="summary-item"><div class="num" id="sumRecords">42</div><div class="label">总记录</div></div>
+        <div class="summary-item"><div class="num" id="sumDays">18</div><div class="label">记录天数</div></div>
+        <div class="summary-item"><div class="num" id="sumRoles">4</div><div class="label">参与角色</div></div>
+      </div>
+      <div class="filter-row" id="timelineFilter"></div>
+      <div id="timelineList"></div>
+    </div>
+
+    <!-- TAB: 学习 -->
+    <div class="tab-pane" id="pane-learning">
+      <div class="section-title">📈 成绩曲线</div>
+      <div class="filter-row" id="gradeSubjectFilter"></div>
+      <div class="chart-box"><canvas id="gradeChart"></canvas></div>
+      <div class="section-title">✏️ 听写记录</div>
+      <div id="dictationList"></div>
+      <div class="section-title">📝 作业完成</div>
+      <div id="homeworkList"></div>
+      <div class="section-title">👩‍🏫 老师反馈</div>
+      <div id="teacherFeedbackList"></div>
+    </div>
+
+    <!-- TAB: 记录 -->
+    <div class="tab-pane" id="pane-record">
+      <div class="section-title">⚡ 快捷模板</div>
+      <div class="template-grid" id="templateGrid"></div>
+      <div class="card" style="margin-bottom:0">
+        <div class="form-group"><label>📝 记录类型</label>
+          <select id="recordType" onchange="updateRecordForm()">
+            <option value="diary">📔 成长日记</option><option value="grade">📊 考试成绩</option><option value="dictation">✏️ 听写反馈</option><option value="homework">📝 作业记录</option><option value="teacher_feedback">👩‍🏫 教师反馈</option><option value="tutoring">🏫 晚辅记录</option><option value="sport">🏃 运动打卡</option>
+          </select></div>
+        <div id="dynamicForm"></div>
+        <button class="btn btn-primary btn-block" onclick="submitRecord()" style="margin-top:8px">保存记录</button>
+      </div>
+      <input type="file" id="ocrFileInput" accept="image/*" style="display:none" onchange="onOCRFileSelected(event)">
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="onOCRFileSelected(event)">
+      <input type="file" id="videoInput" accept="video/*" capture="environment" style="display:none" onchange="onQuickVideoSelected(event)">
+      <input type="file" id="photoCameraInput" accept="image/*" capture="environment" style="display:none" onchange="onPhotoAttached(event)">
+      <input type="file" id="photoAlbumInput" accept="image/*" style="display:none" onchange="onPhotoAttached(event)">
+      <div id="tutorHistorySection" style="display:none">
+        <div class="section-title">📋 晚辅记录历史</div>
+        <div id="tutorHistoryList"></div>
+      </div>
+    </div>
+
+    <!-- TAB: 成长 -->
+    <div class="tab-pane" id="pane-growth">
+      <div class="section-title">🏆 成就徽章</div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:12px;color:#888">已解锁 <b style="color:#6b8f71" id="unlockedCount">0</b> / <b id="totalAchCount">0</b></span>
+          <span style="font-size:12px;color:#888" id="achProgress">0%</span>
+        </div>
+        <div style="height:6px;background:#eee;border-radius:3px;overflow:hidden">
+          <div style="height:100%;background:#6b8f71;border-radius:3px;transition:width .5s" id="achBar"></div>
+        </div>
+      </div>
+      <div class="filter-row" id="achCategoryFilter"></div>
+      <div id="achievementList"></div>
+      <div class="section-title">🏃 运动数据</div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-around;text-align:center">
+          <div><div style="font-size:24px;font-weight:700;color:#6b8f71" id="jumpRopeTotal">0</div><div style="font-size:10px;color:#999">跳绳(次)</div></div>
+          <div><div style="font-size:24px;font-weight:700;color:#6b8f71" id="runTotal">0</div><div style="font-size:10px;color:#999">跑步(km)</div></div>
+          <div><div style="font-size:24px;font-weight:700;color:#6b8f71" id="sportDays">0</div><div style="font-size:10px;color:#999">运动天数</div></div>
+        </div>
+      </div>
+      <div class="section-title">📊 维度分布</div>
+      <div class="chart-box"><canvas id="typeDistChart" height="180"></canvas></div>
+    </div>
+
+    <!-- TAB: 我的 -->
+    <div class="tab-pane" id="pane-settings">
+      <!-- Child Profile (always visible) -->
+      <div class="section-title">👶 孩子档案</div>
+      <div class="card" id="childProfileCard">
+        <div class="form-group"><label>姓名</label><input type="text" id="childName" value="皓皓" onchange="saveSettings()"></div>
+        <div class="form-row">
+          <div class="form-group"><label>学号</label><select id="studentNumber" onchange="saveSettings()" style="width:100%;height:44px;border-radius:10px;border:1px solid #e0d5c8;padding:0 12px;font-size:14px;background:#faf8f5;color:#333;-webkit-appearance:auto;appearance:auto"></select></div>
+          <div class="form-group"><label>昵称</label><input type="text" id="childNick" value="小芽" onchange="saveSettings()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>年级</label>
+            <select id="childGrade" onchange="saveSettings()">
+              <option>幼儿园</option><option selected>小学一年级</option><option>小学二年级</option><option>小学三年级</option><option>小学四年级</option><option>小学五年级</option><option>小学六年级</option>
+            </select></div>
+          <div class="form-group"><label>年龄</label><input type="number" id="childAge" value="7" onchange="saveSettings()"></div>
+        </div>
+      </div>
+      <!-- Current role display -->
+      <div class="section-title">👥 当前角色</div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px" id="settingsRoleIcon">👨</span>
+          <div>
+            <div style="font-size:14px;font-weight:600" id="settingsRoleLabel">爸爸</div>
+            <div style="font-size:11px;color:#888" id="settingsRolePerm"></div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:#aaa">点击右上角角色按钮可切换角色</div>
+      </div>
+      <!-- Admin only: Role password management -->
+      <div class="section-title" id="roleMgmtTitle" style="display:none">🔐 角色密码管理</div>
+      <div class="card" id="roleMgmtCard" style="display:none">
+        <div id="roleMgmtList"></div>
+      </div>
+      <!-- Family info (admin only) -->
+      <div class="section-title" id="familyInfoTitle" style="display:none">🏠 家庭信息</div>
+      <div class="card" id="familyInfoCard" style="display:none">
+        <div style="font-size:12px;color:#666;margin-bottom:8px">
+          家庭：<b id="currentFamilyName">—</b> · 孩子：<b id="currentChildName">皓皓</b>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="showManageChild()" style="margin-right:6px">管理孩子信息</button>
+      </div>
+      <!-- Password change -->
+      <div class="section-title">💳 账户</div>
+      <div class="card">
+        <div style="font-size:12px;color:#666;margin-bottom:6px">当前角色：<b id="currentRoleDisplay">—</b></div>
+        <button class="btn btn-outline btn-sm" onclick="changeOwnPassword()" style="margin-right:6px">修改密码</button>
+        <button class="btn btn-danger btn-sm" onclick="logout()">退出登录</button>
+      </div>
+      <!-- Admin only: Volcano & Data -->
+      <div id="adminOnlySection" style="display:none">
+        <div class="section-title">🌋 火山引擎 API</div>
+        <div class="card">
+          <div style="font-size:12px;color:#666;margin-bottom:8px">Key 通过 <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px">volc-keys.env</code> 配置，不在此处明文输入。</div>
+          <div id="apiStatusBox" style="padding:6px 10px;border-radius:6px;background:#faf8f5;font-size:11px;color:#999">⏳ 检查中...</div>
+        </div>
+        <div class="section-title">🗑️ 数据管理</div>
+        <div class="card">
+          <button class="btn btn-danger btn-sm" onclick="resetAllData()" style="margin-right:6px">清除当前孩子数据</button>
+          <button class="btn btn-outline btn-sm" onclick="loadSampleData()">载入示例数据</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar" id="mainTabBar" style="display:none">
+    <button class="tab-item active" onclick="switchTab('timeline')"><span class="icon">📋</span>动态</button>
+    <button class="tab-item" onclick="switchTab('learning')"><span class="icon">📚</span>学习</button>
+    <button class="tab-item" onclick="switchTab('record')" style="position:relative"><span class="icon" style="background:#6b8f71;color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;margin-top:-18px;box-shadow:0 2px 8px rgba(107,143,113,.4)">＋</span><span style="margin-top:4px">记录</span></button>
+    <button class="tab-item" onclick="switchTab('growth')"><span class="icon">🌟</span>成长</button>
+    <button class="tab-item" onclick="switchTab('settings')"><span class="icon">⚙️</span>我的</button>
+  </div>
+
+  <!-- Modal + Toast -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal" id="modalContent" onclick="event.stopPropagation()"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════════════════
+const SUBJECT_COLORS={
+  '语文':'#e74c3c','数学':'#3498db','英语':'#2ecc71','科学':'#9b59b6',
+  '音乐':'#f39c12','美术':'#1abc9c','体育':'#e67e22','道德':'#95a5a6','其他':'#7f8c8d'
+};
+const ROLES=[
+  {id:'dad',icon:'👨',label:'爸爸',avatarBg:'#d5e8d4',permission:'admin'},
+  {id:'mom',icon:'👩',label:'妈妈',avatarBg:'#fce4ec',permission:'admin'},
+  {id:'grandpa',icon:'👴',label:'爷爷',avatarBg:'#ffe0b2',permission:'limited'},
+  {id:'grandma',icon:'👵',label:'奶奶',avatarBg:'#f3e5f5',permission:'limited'},
+  {id:'wgrandpa',icon:'🧓',label:'外公',avatarBg:'#e8f5e9',permission:'limited'},
+  {id:'wgrandma',icon:'🧑‍🦳',label:'外婆',avatarBg:'#fff9c4',permission:'limited'},
+  {id:'tutor',icon:'📚',label:'晚辅老师',avatarBg:'#e0f7fa',permission:'limited'},
+];
+const ADMIN_ROLES=['dad','mom'];
+const LIMITED_ROLES=['grandpa','grandma','wgrandpa','wgrandma','tutor'];
+const RECORD_TYPES=[
+  {id:'diary',icon:'📔',label:'成长日记',color:'#95a5a6',bg:'#f5f5f5'},
+  {id:'grade',icon:'📊',label:'考试成绩',color:'#3498db',bg:'#e3f2fd'},
+  {id:'dictation',icon:'✏️',label:'听写反馈',color:'#2ecc71',bg:'#e8f5e9'},
+  {id:'homework',icon:'📝',label:'作业记录',color:'#e67e22',bg:'#fff3e0'},
+  {id:'teacher_feedback',icon:'👩‍🏫',label:'教师反馈',color:'#e74c3c',bg:'#fce4ec'},
+  {id:'tutoring',icon:'🏫',label:'晚辅记录',color:'#f39c12',bg:'#fff8e1'},
+  {id:'sport',icon:'🏃',label:'运动打卡',color:'#1abc9c',bg:'#e0f2f1'},
+];
+const ACHIEVEMENTS=[
+  {id:'a1',category:'学习',icon:'💯',name:'首次满分',desc:'任意科目首次获得100分',check:checkA1},
+  {id:'a2',category:'学习',icon:'📈',name:'连续进步',desc:'同一科目连续3次成绩上升',check:checkA2},
+  {id:'a3',category:'学习',icon:'✏️',name:'听写达人',desc:'连续5次听写全对',check:checkA3},
+  {id:'a4',category:'学习',icon:'🏅',name:'班级前十',desc:'任意科目进入班级前10名',check:checkA4},
+  {id:'a5',category:'运动',icon:'🪢',name:'跳绳小将',desc:'累计跳绳达到1000次',check:checkA5},
+  {id:'a6',category:'运动',icon:'🪢',name:'跳绳高手',desc:'累计跳绳达到5000次',check:checkA6},
+  {id:'a7',category:'运动',icon:'🏃',name:'跑步达人',desc:'累计跑步达到5公里',check:checkA7},
+  {id:'a8',category:'运动',icon:'🏃',name:'跑步健将',desc:'累计跑步达到20公里',check:checkA8},
+  {id:'a9',category:'习惯',icon:'🔥',name:'连续7天',desc:'连续7天有成长记录',check:checkA9},
+  {id:'a10',category:'习惯',icon:'📅',name:'月度满勤',desc:'一个月内每天都有记录',check:checkA10},
+  {id:'a11',category:'里程碑',icon:'🎒',name:'一年级收官',desc:'一年级结束',check:checkA11},
+  {id:'a12',category:'里程碑',icon:'🎉',name:'百日记念',desc:'累计100条成长记录',check:checkA12},
+];
+
+// ══════════════════════════════════════════════════════════
+//  DATA LAYER — Multi-Tenant
+// ══════════════════════════════════════════════════════════
+const DATA = (() => {
+  // ── Session ──
+  function getSession() { try { return JSON.parse(localStorage.getItem('yd_session')) } catch(e) { return null } }
+  function setSession(s) { localStorage.setItem('yd_session', JSON.stringify(s)) }
+  function clearSession() { localStorage.removeItem('yd_session') }
+  function isLoggedIn() { return !!getSession() }
+  function sessionKey(key) { const s = getSession(); return s ? `yd_${s.childId}_${key}` : `yd_anon_${key}` }
+
+  // ── Family Account (single object, no more multi-account) ──
+  function getFamilyAccount() { try { return JSON.parse(localStorage.getItem('yd_family_account')) } catch(e) { return null } }
+  function saveFamilyAccount(obj) { localStorage.setItem('yd_family_account', JSON.stringify(obj)) }
+
+  // ── Role Passwords ──
+  function getRolePasswords() { try { return JSON.parse(localStorage.getItem('yd_role_passwords')) || {} } catch(e) { return {} } }
+  function saveRolePasswords(obj) { localStorage.setItem('yd_role_passwords', JSON.stringify(obj)) }
+
+  // ── Records ──
+  function getRecords() { try { return JSON.parse(localStorage.getItem(sessionKey('records'))) || [] } catch(e) { return [] } }
+  function saveRecords(arr) { localStorage.setItem(sessionKey('records'), JSON.stringify(arr)) }
+
+  // ── Achievements ──
+  function getAchievements() { try { return JSON.parse(localStorage.getItem(sessionKey('achievements'))) || {} } catch(e) { return {} } }
+  function saveAchievements(obj) { localStorage.setItem(sessionKey('achievements'), JSON.stringify(obj)) }
+
+  // ── Settings ──
+  function getSettings() {
+    const s = getSession();
+    const def = {};
+    if (!s) return def;
+    try { return { ...def, ...JSON.parse(localStorage.getItem(sessionKey('settings'))) } } catch(e) { return def }
+  }
+  function saveSettingsObj(s) { const cur = getSettings(); Object.assign(cur, s); localStorage.setItem(sessionKey('settings'), JSON.stringify(cur)) }
+
+  return { getSession, setSession, clearSession, isLoggedIn, sessionKey, getFamilyAccount, saveFamilyAccount, getRolePasswords, saveRolePasswords, getRecords, saveRecords, getAchievements, saveAchievements, getSettings, saveSettingsObj }
+})();
+
+// ══════════════════════════════════════════════════════════
+//  CRYPTO UTILITIES
+// ══════════════════════════════════════════════════════════
+function sha256(str) {
+  function ROTR(x,n){return(x>>>n)|(x<<(32-n))}
+  function SHR(x,n){return x>>>n}
+  function Ch(x,y,z){return(x&y)^(~x&z)}
+  function Maj(x,y,z){return(x&y)^(x&z)^(y&z)}
+  function S0(x){return ROTR(x,2)^ROTR(x,13)^ROTR(x,22)}
+  function S1(x){return ROTR(x,6)^ROTR(x,11)^ROTR(x,25)}
+  function s0(x){return ROTR(x,7)^ROTR(x,18)^SHR(x,3)}
+  function s1(x){return ROTR(x,17)^ROTR(x,19)^SHR(x,10)}
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const bytes=[];for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);if(c<0x80)bytes.push(c);else if(c<0x800){bytes.push(0xc0|(c>>6));bytes.push(0x80|(c&0x3f))}else{bytes.push(0xe0|(c>>12));bytes.push(0x80|((c>>6)&0x3f));bytes.push(0x80|(c&0x3f))}}
+  const ml=bytes.length*8;bytes.push(0x80);while((bytes.length+8)%64!==0)bytes.push(0);
+  for(let i=0;i<8;i++)bytes.push((ml/4294967296)>>>(8*(3-i))&0xff,(ml>>>(8*(3-i)))&0xff);
+  const H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  for(let bi=0;bi<bytes.length;bi+=64){
+    const W=new Array(64);for(let t=0;t<16;t++)W[t]=(bytes[bi+t*4]<<24)|(bytes[bi+t*4+1]<<16)|(bytes[bi+t*4+2]<<8)|bytes[bi+t*4+3];
+    for(let t=16;t<64;t++)W[t]=(s1(W[t-2])+W[t-7]+s0(W[t-15])+W[t-4])|0;
+    let a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+    for(let t=0;t<64;t++){const T1=(h+S1(e)+Ch(e,f,g)+K[t]+W[t])|0;const T2=(S0(a)+Maj(a,b,c))|0;h=g;g=f;f=e;e=(d+T1)|0;d=c;c=b;b=a;a=(T1+T2)|0}
+    H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0;
+  }
+  return H.map(v=>(v>>>0).toString(16).padStart(8,'0')).join('');
+}
+function hashPassword(pw,salt){return sha256(pw+salt)}
+function randStr(len=16){
+  const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  if(typeof crypto!=='undefined'&&crypto.getRandomValues)return Array.from(crypto.getRandomValues(new Uint8Array(len))).map(b=>chars[b%chars.length]).join('');
+  let r='';for(let i=0;i<len;i++)r+=chars[Math.floor(Math.random()*chars.length)];return r
+}
+
+// ══════════════════════════════════════════════════════════
+//  AUTH — Role-Based Login
+// ══════════════════════════════════════════════════════════
+let _loginRoleId = null;
+
+function showError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg; el.style.display = '';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+function showSetupError(msg) {
+  const el = document.getElementById('setupError');
+  el.textContent = msg; el.style.display = '';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+// Show role grid on login screen
+function showRoleGrid() {
+  _loginRoleId = null;
+  document.getElementById('loginOverlay').classList.add('show');
+  document.getElementById('roleGrid').style.display = '';
+  document.getElementById('pwPrompt').style.display = 'none';
+  document.getElementById('setupPrompt').style.display = 'none';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
+
+  const fa = DATA.getFamilyAccount();
+  const rp = DATA.getRolePasswords();
+
+  if (!fa) {
+    // First-time setup
+    document.getElementById('roleGrid').style.display = 'none';
+    document.getElementById('setupPrompt').style.display = '';
+    document.getElementById('setupStudentNumber').innerHTML = Array.from({length:60},(_,i)=>`<option value="${i+1}" ${i+1===29?'selected':''}>${i+1}号</option>`).join('');
+    document.getElementById('pwPrompt').style.display = 'none';
+    document.getElementById('loginSub').textContent = '首次使用，请设置家庭信息';
+    return;
+  }
+
+  document.getElementById('loginSub').textContent = '选择角色进入';
+  let html = '';
+  ROLES.forEach(r => {
+    const hasPw = !!rp[r.id];
+    const isAdmin = r.permission === 'admin';
+    html += `<div class="login-role-btn" onclick="selectLoginRole('${r.id}')">
+      <span class="lricon">${r.icon}</span>
+      <span class="lrlabel">${r.label}${isAdmin?' ⭐':''}</span>
+      <span class="lrhint">${isAdmin ? '管理员' : (hasPw ? '已有密码' : '🔒 未设密码')}</span>
+    </div>`;
+  });
+  document.getElementById('roleGrid').innerHTML = html;
+}
+
+function selectLoginRole(roleId) {
+  _loginRoleId = roleId;
+  const rp = DATA.getRolePasswords();
+  const role = ROLES.find(r => r.id === roleId);
+
+  if (role.permission === 'admin') {
+    // Admin roles use family admin password
+  } else if (!rp[roleId]) {
+    showError('该角色尚未设置密码，请联系管理员在设置页面设置');
+    return;
+  }
+
+  document.getElementById('roleGrid').style.display = 'none';
+  document.getElementById('pwPrompt').style.display = '';
+  document.getElementById('pwPromptLabel').textContent = role.permission === 'admin' ? '管理员密码' : (role.label + ' 密码');
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginPassword').focus();
+  document.getElementById('loginError').style.display = 'none';
+}
+
+function handleRoleLogin() {
+  try {
+    if (!_loginRoleId) { showError('请先选择角色'); return; }
+    const password = document.getElementById('loginPassword').value;
+    if (!password) { showError('请输入密码'); return; }
+    if (password.length < 4) { showError('密码至少4个字符'); return; }
+
+    const fa = DATA.getFamilyAccount();
+    if (!fa) { showError('系统未初始化'); return; }
+    const rp = DATA.getRolePasswords();
+    const role = ROLES.find(r => r.id === _loginRoleId);
+
+    // Admin login: verify against family admin password
+    if (role.permission === 'admin') {
+      const hash = hashPassword(password, fa.adminPasswordSalt);
+      if (hash !== fa.adminPasswordHash) { showError('管理员密码错误'); return; }
+    } else {
+      // Limited role: verify against role-specific password
+      const rpEntry = rp[_loginRoleId];
+      if (!rpEntry) { showError('该角色尚未设置密码'); return; }
+      const hash = hashPassword(password, rpEntry.salt);
+      if (hash !== rpEntry.passwordHash) { showError('密码错误'); return; }
+    }
+
+    // Login success - set session
+    const childId = (fa.children && fa.children.length > 0) ? fa.children[0].id : 'c_default';
+    DATA.setSession({ childId, roleId: _loginRoleId, rolePermission: role.permission });
+
+    document.getElementById('loginOverlay').classList.remove('show');
+    enterAppDirect();
+  } catch(err) {
+    showError('操作失败：' + err.message);
+    console.error('Login error:', err);
+  }
+}
+
+// First-time setup
+function handleSetup() {
+  try {
+    const familyName = document.getElementById('setupFamilyName').value.trim();
+    const adminPw = document.getElementById('setupAdminPassword').value;
+    const confirmPw = document.getElementById('setupConfirmPwd').value;
+    const childName = document.getElementById('setupChildName').value.trim();
+    const childNick = document.getElementById('setupChildNick').value.trim();
+    const childGrade = document.getElementById('setupChildGrade').value;
+    const childAge = parseInt(document.getElementById('setupChildAge').value) || 7;
+    const studentNumber = document.getElementById('setupStudentNumber').value;
+
+    if (!familyName) { showSetupError('请输入家庭名称'); return; }
+    if (!adminPw || adminPw.length < 4) { showSetupError('密码至少4个字符'); return; }
+    if (adminPw !== confirmPw) { showSetupError('两次密码不一致'); return; }
+    if (!childName) { showSetupError('请输入孩子姓名'); return; }
+
+    const salt = randStr();
+    const hash = hashPassword(adminPw, salt);
+    const childId = 'c_' + uid();
+
+    // Create family account
+    const fa = {
+      adminPasswordHash: hash, adminPasswordSalt: salt,
+      createdAt: new Date().toISOString(),
+      familyName: familyName,
+      children: [{ id: childId, name: childName, nick: childNick || childName, grade: childGrade, age: childAge, studentNumber: studentNumber }]
+    };
+    DATA.saveFamilyAccount(fa);
+
+    // Copy admin password to dad/mom roles
+    DATA.saveRolePasswords({
+      dad: { passwordHash: hash, salt: salt },
+      mom: { passwordHash: hash, salt: salt }
+    });
+
+    // Login as dad (admin)
+    DATA.setSession({ childId, roleId: 'dad', rolePermission: 'admin' });
+    document.getElementById('loginOverlay').classList.remove('show');
+    enterAppDirect();
+    showToast('🎉 家庭空间创建成功！');
+  } catch(err) {
+    showSetupError('创建失败：' + err.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  APP ENTRY & LOGOUT
+// ══════════════════════════════════════════════════════════
+function enterAppDirect() {
+  document.getElementById('selectorOverlay').classList.remove('show');
+  document.getElementById('mainHeader').style.display = '';
+  document.getElementById('phoneBody').style.display = '';
+  document.getElementById('mainTabBar').style.display = '';
+  initMainApp();
+}
+
+function logout() {
+  document.getElementById('mainHeader').style.display = 'none';
+  document.getElementById('phoneBody').style.display = 'none';
+  document.getElementById('mainTabBar').style.display = 'none';
+  document.getElementById('selectorOverlay').classList.remove('show');
+  DATA.clearSession();
+  currentTab = 'timeline';
+  chartInstances = {};
+  showRoleGrid();
+}
+
+function changeOwnPassword() {
+  const s = DATA.getSession();
+  if (!s) return;
+  const oldPw = prompt('请输入当前密码');
+  if (!oldPw) return;
+
+  const fa = DATA.getFamilyAccount();
+  const rp = DATA.getRolePasswords();
+  const isAdmin = s.rolePermission === 'admin';
+
+  // Verify current password
+  let valid = false;
+  if (isAdmin) {
+    valid = hashPassword(oldPw, fa.adminPasswordSalt) === fa.adminPasswordHash;
+  } else {
+    const entry = rp[s.roleId];
+    valid = entry && hashPassword(oldPw, entry.salt) === entry.passwordHash;
+  }
+  if (!valid) { showToast('当前密码错误'); return; }
+
+  const newPw = prompt('请输入新密码（至少4个字符）');
+  if (!newPw || newPw.length < 4) { showToast('新密码至少4个字符'); return; }
+  const confirm = prompt('再次输入新密码');
+  if (newPw !== confirm) { showToast('两次密码不一致'); return; }
+
+  const salt = randStr();
+  const hash = hashPassword(newPw, salt);
+
+  if (isAdmin) {
+    fa.adminPasswordHash = hash;
+    fa.adminPasswordSalt = salt;
+    DATA.saveFamilyAccount(fa);
+    // Also update dad/mom role passwords
+    rp.dad = { passwordHash: hash, salt: salt };
+    rp.mom = { passwordHash: hash, salt: salt };
+    DATA.saveRolePasswords(rp);
+  } else {
+    rp[s.roleId] = { passwordHash: hash, salt: salt };
+    DATA.saveRolePasswords(rp);
+  }
+  showToast('密码已修改');
+}
+
+// ══════════════════════════════════════════════════════════
+//  UTILITIES
+// ══════════════════════════════════════════════════════════
+function uid() { return 'r' + Date.now() + Math.random().toString(36).slice(2, 8) }
+function fmtDate(d) { const dd = new Date(d); return dd.getMonth()+1+'/'+dd.getDate()+' '+dd.getHours().toString().padStart(2,'0')+':'+dd.getMinutes().toString().padStart(2,'0') }
+function fmtDateShort(d) { const dd = new Date(d); return dd.getFullYear()+'-'+(dd.getMonth()+1).toString().padStart(2,'0')+'-'+dd.getDate().toString().padStart(2,'0') }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000) }
+function escapeHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;') }
+function roleIcon(id) { const r = ROLES.find(x => x.id === id); return r ? r.icon : '👤' }
+function roleLabel(id) { const r = ROLES.find(x => x.id === id); return r ? r.label : id }
+function roleAvatarColor(id) { const r = ROLES.find(x => x.id === id); return r ? r.avatarBg : '#eee' }
+function typeIcon(id) { const t = RECORD_TYPES.find(x => x.id === id); return t ? t.icon : '📋' }
+function typeLabel(id) { const t = RECORD_TYPES.find(x => x.id === id); return t ? t.label : id }
+function typeColor(id) { const t = RECORD_TYPES.find(x => x.id === id); return t ? t.color : '#999' }
+function typeBg(id) { const t = RECORD_TYPES.find(x => x.id === id); return t ? t.bg : '#f5f5f5' }
+
+function getCurrentChild() {
+  const s = DATA.getSession();
+  if (!s) return null;
+  const fa = DATA.getFamilyAccount();
+  if (!fa || !fa.children) return null;
+  return fa.children.find(c => c.id === s.childId) || fa.children[0] || null;
+}
+
+// ══════════════════════════════════════════════════════════
+//  MAIN APP STATE
+// ══════════════════════════════════════════════════════════
+let currentTab = 'timeline', currentRoleIdx = 0;
+let timelineTypeFilter = 'all', gradeSubFilter = 'all', achCatFilter = '全部';
+let chartInstances = {};
+let editingId = null;
+
+function initMainApp() {
+  const s = DATA.getSession();
+  if (!s || !s.childId) return;
+
+  const child = getCurrentChild();
+  // Set currentRoleIdx from session role
+  const roleId = s.roleId || 'dad';
+  currentRoleIdx = ROLES.findIndex(r => r.id === roleId);
+  if (currentRoleIdx < 0) currentRoleIdx = 0;
+
+  // Update header
+  if (child) {
+    document.getElementById('headerChildName').textContent = child.name + ' 的成长日记';
+    document.getElementById('headerChildMeta').textContent = (child.grade || '') + ' · ' + (child.age || '') + '岁';
+  }
+
+  updateRoleUI();
+  renderAll();
+  checkProxyStatus();
+  // Tutor role adjustments
+  setupTutorMode();
+}
+
+function setupTutorMode() {
+  const s = DATA.getSession();
+  const isTutor = s && s.roleId === 'tutor';
+  // Record type: hide selector for tutors, force tutoring
+  const rtParent = document.getElementById('recordType').parentElement;
+  if (rtParent) rtParent.style.display = isTutor ? 'none' : '';
+  // Tutor history section
+  const histSection = document.getElementById('tutorHistorySection');
+  if (histSection) histSection.style.display = isTutor ? '' : 'none';
+  if (isTutor) {
+    document.getElementById('recordType').value = 'tutoring';
+    updateRecordForm();
+    renderTutorHistory();
+    currentTab = 'record';
+  }
+}
+
+function renderTutorHistory() {
+  const records = DATA.getRecords().filter(r => r.type === 'tutoring').sort((a,b) => new Date(b.timestamp)-new Date(a.timestamp));
+  const container = document.getElementById('tutorHistoryList');
+  if (!container) return;
+  if (records.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="padding:20px"><div class="text">还没有晚辅记录</div></div>';
+    return;
+  }
+  let html = '';
+  records.forEach(r => {
+    const statusLabels = {done:'✅ 已完成',partial:'⚠️ 部分完成',not_done:'❌ 未完成'};
+    const perfLabels = {excellent:'🌟 优秀',good:'👍 良好',normal:'👌 一般',poor:'👎 需改进'};
+    html += `<div class="card">
+      <div class="card-header">
+        <span class="card-type-badge" style="background:#fff8e1;color:#f39c12">🏫 晚辅记录</span>
+        <span class="card-date">${fmtDate(r.timestamp)}</span>
+      </div>
+      <div class="card-content">${r.content||'无备注'}</div>
+      <div class="card-meta">
+        <span class="meta-tag good">${statusLabels[r.metadata.homeworkStatus]||r.metadata.homeworkStatus}</span>
+        <span class="meta-tag">${perfLabels[r.metadata.performance]||r.metadata.performance}</span>
+        ${r.metadata.videoData ? '<span class="meta-tag info" onclick="playTutorVideo(\''+r.id+'\')" style="cursor:pointer">📹 查看视频</span>' : ''}
+      </div>
+      ${canEdit(r) ? `<div style="margin-top:6px;display:flex;gap:4px">
+        <button class="btn btn-outline btn-sm" onclick="editRecord('${r.id}')">编辑</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRecord('${r.id}')">删除</button>
+      </div>` : ''}
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function updateRoleUI() {
+  const s = DATA.getSession();
+  const r = s ? (ROLES.find(x => x.id === s.roleId) || ROLES[0]) : ROLES[0];
+  document.getElementById('roleIcon').textContent = r.icon;
+  document.getElementById('roleLabel').textContent = r.label;
+  const sr = document.getElementById('settingsRole');
+  if (sr) sr.textContent = r.label;
+  // Tutor mode: adjust tabs
+  const tabItems = document.querySelectorAll('.tab-item');
+  if (r.id === 'tutor') {
+    // Show only 记录 and 我的
+    tabItems.forEach((t,i) => {
+      if (i === 2 || i === 4) t.style.display = ''; // 记录, 我的
+      else t.style.display = 'none';
+    });
+    if (currentTab !== 'record' && currentTab !== 'settings') currentTab = 'record';
+    // Default record type to tutoring
+    if (document.getElementById('recordType')) {
+      document.getElementById('recordType').value = 'tutoring';
+      updateRecordForm();
+    }
+  } else {
+    tabItems.forEach(t => t.style.display = '');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SAMPLE DATA (scoped to current child)
+// ══════════════════════════════════════════════════════════
+function loadSampleData() {
+  const now = Date.now();
+  const d = ms => new Date(now + ms).toISOString();
+  const records = [
+    {id:uid(),type:'grade',role:'dad',timestamp:d(-14*864e5),content:'数学单元测试考了满分！特别细心，计算题全部正确。',metadata:{subject:'数学',grade:'A+',maxScore:100,examName:'第三单元测试'}},
+    {id:uid(),type:'grade',role:'dad',timestamp:d(-7*864e5),content:'语文期中考试，阅读理解有进步。',metadata:{subject:'语文',grade:'A',maxScore:100,examName:'期中考试'}},
+    {id:uid(),type:'grade',role:'mom',timestamp:d(-21*864e5),content:'英语第一次月考，听力部分丢了分，需要多练。',metadata:{subject:'英语',grade:'B+',maxScore:100,examName:'第一次月考'}},
+    {id:uid(),type:'grade',role:'mom',timestamp:d(-2*864e5),content:'数学期末复习综合过关A+，继续保持！',metadata:{subject:'数学',grade:'A+',maxScore:100,examName:'期末复习综合过关'}},
+    {id:uid(),type:'grade',role:'dad',timestamp:d(-5*864e5),content:'语文词语听写满分25人之一。',metadata:{subject:'语文',grade:'A+',maxScore:100,examName:'词语听写'}},
+    {id:uid(),type:'grade',role:'mom',timestamp:d(-10*864e5),content:'语文单元素养卷成绩不错，A档。',metadata:{subject:'语文',grade:'A',maxScore:100,examName:'单元素养卷'}},
+    {id:uid(),type:'dictation',role:'dad',timestamp:d(-3*864e5),content:'语文词语听写反馈：满分25人，皓皓在其中。',metadata:{subject:'语文',result:'full_mark',errorCount:0,errorWords:''}},
+    {id:uid(),type:'dictation',role:'dad',timestamp:d(-10*864e5),content:'上次听写错2个字：花瓣的瓣、犹豫的豫。',metadata:{subject:'语文',result:'errors',errorCount:2,errorWords:'瓣,豫'}},
+    {id:uid(),type:'homework',role:'dad',timestamp:d(-1*864e5),content:'今天作业完成很快！数学口算10分钟就做完了。',metadata:{subject:'数学',completion:'done',duration:10,quality:'excellent'}},
+    {id:uid(),type:'homework',role:'tutor',timestamp:d(-2*864e5),content:'晚辅做了语文练习册第8页，数学口算2页。',metadata:{subject:'语文+数学',completion:'done',duration:45,quality:'good'}},
+    {id:uid(),type:'teacher_feedback',role:'dad',timestamp:d(-3*864e5),content:'数学期末复习综合过关反馈：A+学生学号：5/8/12/15/29/22/25/28/30，A学生学号：1/2/3/7/9/11/13/16/20/23/26',metadata:{subject:'数学'}},
+    {id:uid(),type:'teacher_feedback',role:'dad',timestamp:d(-6*864e5),content:'语文单元素养卷反馈：A+学生学号：3/8/14/19/22/25，A学生学号：.../29/...',metadata:{subject:'语文'}},
+    {id:uid(),type:'tutoring',role:'tutor',timestamp:d(-1*864e5),content:'今天晚辅状态不错，主动完成了语文词语听写的预习。',metadata:{homeworkStatus:'done',performance:'good',videoUrl:''}},
+    {id:uid(),type:'tutoring',role:'tutor',timestamp:d(-4*864e5),content:'晚辅做了英语单词默写，10个错1个。',metadata:{homeworkStatus:'done',performance:'good',videoUrl:''}},
+    {id:uid(),type:'diary',role:'mom',timestamp:d(-8*864e5),content:'今天放学回家特别开心，说体育课跳绳跳了138个，全班第一！',metadata:{mood:'happy',images:[]}},
+    {id:uid(),type:'diary',role:'dad',timestamp:d(-12*864e5),content:'周末带去公园玩了半天，和小朋友一起踢球、放风筝。',metadata:{mood:'happy',images:[]}},
+    {id:uid(),type:'diary',role:'grandma',timestamp:d(-15*864e5),content:'放学接娃，在校门口买了糖葫芦，吃得满嘴都是。',metadata:{mood:'happy',images:[]}},
+    {id:uid(),type:'diary',role:'grandpa',timestamp:d(-20*864e5),content:'带娃去菜市场买菜，帮爷爷提菜篮子。',metadata:{mood:'happy',images:[]}},
+    {id:uid(),type:'diary',role:'wgrandpa',timestamp:d(-18*864e5),content:'放学后接皓皓回外公家玩，一起吃晚饭。',metadata:{mood:'happy',images:[]}},
+    {id:uid(),type:'diary',role:'wgrandma',timestamp:d(-25*864e5),content:'周末带皓皓去外婆家，蒸了他最喜欢的包子！',metadata:{mood:'happy',images:[]}},
+    {id:uid(),type:'sport',role:'dad',timestamp:d(-2*864e5),content:'跳绳150个，状态很好',metadata:{activity:'跳绳',count:150,unit:'个',duration:null}},
+    {id:uid(),type:'sport',role:'mom',timestamp:d(-6*864e5),content:'晚饭后跑步1.5公里',metadata:{activity:'跑步',count:1.5,unit:'公里',duration:null}},
+    {id:uid(),type:'sport',role:'dad',timestamp:d(-9*864e5),content:'跳绳200个，破了个人记录！',metadata:{activity:'跳绳',count:200,unit:'个',duration:null}},
+  ];
+  DATA.saveRecords(records);
+  DATA.saveAchievements({});
+  achievementCheckAll();
+}
+
+// ══════════════════════════════════════════════════════════
+//  ACHIEVEMENT CHECKS
+// ══════════════════════════════════════════════════════════
+function achievementCheckAll() {
+  const records = DATA.getRecords();
+  const unlocked = DATA.getAchievements();
+  ACHIEVEMENTS.forEach(a => {
+    if (!unlocked[a.id]) {
+      const result = a.check(records);
+      if (result) unlocked[a.id] = { unlockedAt: result.unlockedAt || new Date().toISOString(), metadata: result.metadata || {} };
+    }
+  });
+  DATA.saveAchievements(unlocked);
+}
+
+const GRADE_MAP = {'A+':10,'A':9,'A-':8,'B+':7,'B':6,'B-':5,'C':4,'C-':3,'D':2,'需努力':1};
+function gradeToNum(g) { return GRADE_MAP[g] || 0 }
+
+function checkA1(records) { for (const r of records) { if (r.type==='grade'&&r.metadata&&r.metadata.grade==='A+') return {unlockedAt:r.timestamp} } return null }
+function checkA2(records) {
+  const grades = records.filter(r=>r.type==='grade'&&r.metadata&&r.metadata.grade!=null).sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  const bySub={}; grades.forEach(g=>{const s=g.metadata.subject;if(!bySub[s]) bySub[s]=[];bySub[s].push(g)});
+  for (const sub in bySub) { const arr=bySub[sub]; for (let i=2;i<arr.length;i++) { const a=gradeToNum(arr[i].metadata.grade),b=gradeToNum(arr[i-1].metadata.grade),c=gradeToNum(arr[i-2].metadata.grade); if (a>b&&b>c) return {unlockedAt:arr[i].timestamp,metadata:{subject:sub}} } }
+  return null;
+}
+function checkA3(records) {
+  const dicts=records.filter(r=>r.type==='dictation').sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  let streak=0; for (const d of dicts) { if (d.metadata&&d.metadata.result==='full_mark'){streak++;if(streak>=5) return {unlockedAt:d.timestamp}} else streak=0 }
+  return null;
+}
+function checkA4(records) { for (const r of records) { if (r.type==='grade'&&r.metadata&&r.metadata.grade==='A+') return {unlockedAt:r.timestamp,metadata:{subject:r.metadata.subject,grade:r.metadata.grade}} } return null }
+function checkA5(records) { let total=0; records.filter(r=>r.type==='sport'&&r.metadata&&r.metadata.activity==='跳绳').forEach(r=>total+=(r.metadata.count||0)); if (total>=1000) return {unlockedAt:new Date().toISOString(),metadata:{total}}; return null }
+function checkA6(records) { let total=0; records.filter(r=>r.type==='sport'&&r.metadata&&r.metadata.activity==='跳绳').forEach(r=>total+=(r.metadata.count||0)); if (total>=5000) return {unlockedAt:new Date().toISOString(),metadata:{total}}; return null }
+function checkA7(records) { let total=0; records.filter(r=>r.type==='sport'&&r.metadata&&r.metadata.activity==='跑步').forEach(r=>total+=(r.metadata.count||0)); if (total>=5) return {unlockedAt:new Date().toISOString(),metadata:{total}}; return null }
+function checkA8(records) { let total=0; records.filter(r=>r.type==='sport'&&r.metadata&&r.metadata.activity==='跑步').forEach(r=>total+=(r.metadata.count||0)); if (total>=20) return {unlockedAt:new Date().toISOString(),metadata:{total}}; return null }
+function checkA9(records) {
+  if (records.length===0) return null;
+  const dates=[...new Set(records.map(r=>fmtDateShort(r.timestamp)).sort())];
+  let streak=1,maxStreak=1;
+  for (let i=1;i<dates.length;i++) { const d1=new Date(dates[i-1]),d2=new Date(dates[i]); if ((d2-d1)/(864e5)<=1){streak++}else streak=1; if (streak>maxStreak) maxStreak=streak }
+  if (maxStreak>=7) return {unlockedAt:new Date().toISOString(),metadata:{streak:maxStreak}}; return null;
+}
+function checkA10(records) {
+  if (records.length<30) return null;
+  const dates=[...new Set(records.map(r=>fmtDateShort(r.timestamp)))];
+  const monthDates={}; dates.forEach(d=>{const m=d.slice(0,7);if(!monthDates[m]) monthDates[m]=new Set();monthDates[m].add(d)});
+  for (const m in monthDates) { const daysInMonth=new Date(parseInt(m.split('-')[0]),parseInt(m.split('-')[1]),0).getDate(); if (monthDates[m].size===daysInMonth) return {unlockedAt:new Date().toISOString(),metadata:{month:m}} }
+  return null;
+}
+function checkA11(records) { return {unlockedAt:new Date().toISOString()} }
+function checkA12(records) { if (records.length>=100) return {unlockedAt:new Date().toISOString(),metadata:{count:records.length}}; return null }
+
+// ══════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════
+function renderAll() {
+  achievementCheckAll();
+  updateSummary();
+  renderTimeline();
+  renderLearning();
+  renderGrowth();
+  renderSettings();
+  updateRecordForm();
+  updateTemplateGrid();
+}
+
+function updateSummary() {
+  const records = DATA.getRecords();
+  const dates = [...new Set(records.map(r => fmtDateShort(r.timestamp)))];
+  const roles = [...new Set(records.map(r => r.role))];
+  document.getElementById('sumRecords').textContent = records.length;
+  document.getElementById('sumDays').textContent = dates.length;
+  document.getElementById('sumRoles').textContent = roles.length;
+}
+
+function renderTimelineFilter() {
+  let chips = '<span class="filter-chip'+(timelineTypeFilter==='all'?' active':'')+'" onclick="setTimelineFilter(\'all\')">全部</span>';
+  RECORD_TYPES.forEach(t => { chips += '<span class="filter-chip'+(timelineTypeFilter===t.id?' active':'')+'" onclick="setTimelineFilter(\''+t.id+'\')">'+t.icon+' '+t.label+'</span>' });
+  document.getElementById('timelineFilter').innerHTML = chips;
+}
+function setTimelineFilter(f) { timelineTypeFilter = f; renderTimelineFilter(); renderTimeline() }
+
+function renderTimeline() {
+  renderTimelineFilter();
+  let records = DATA.getRecords();
+  if (timelineTypeFilter !== 'all') records = records.filter(r => r.type === timelineTypeFilter);
+  records.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const container = document.getElementById('timelineList');
+  if (records.length === 0) { container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div class="text">还没有记录</div></div>'; return }
+  let html = '';
+  records.forEach(r => {
+    const role = ROLES.find(x => x.id === r.role) || {icon:'👤',label:r.role,avatarBg:'#eee'};
+    const canEditRecord = canEdit(r);
+    const editBtns = canEditRecord
+      ? `<button class="btn btn-outline btn-sm" onclick="editRecord('${r.id}')" style="padding:2px 8px;font-size:10px">编辑</button><button class="btn btn-danger btn-sm" onclick="deleteRecord('${r.id}')" style="padding:2px 8px;font-size:10px">删除</button>`
+      : `<span style="font-size:10px;color:#ccc">—</span>`;
+    html += `<div class="card card-compact"><div class="card-header"><div class="card-role"><div class="avatar" style="background:${role.avatarBg}">${role.icon}</div><span>${role.label}</span><span class="card-type-badge" style="background:${typeBg(r.type)};color:${typeColor(r.type)}">${typeIcon(r.type)} ${typeLabel(r.type)}</span></div><span class="card-date">${fmtDate(r.timestamp)}</span></div><div class="card-content">${r.content||''}</div>${renderCardMeta(r)}<div style="margin-top:4px;display:flex;gap:4px;justify-content:flex-end">${editBtns}</div></div>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderCardMeta(r) {
+  if (!r.metadata) return '';
+  let tags = '';
+  switch (r.type) {
+    case 'grade':
+      if (r.metadata.grade) tags += `<span class="meta-tag good">${r.metadata.subject}: ${r.metadata.grade}</span>`;
+      if (r.metadata.examName) tags += `<span class="meta-tag">${r.metadata.examName}</span>`;
+      break;
+    case 'dictation':
+      if (r.metadata.result==='full_mark') tags += '<span class="meta-tag good">全部正确</span>';
+      else if (r.metadata.result==='errors') tags += `<span class="meta-tag warn">错${r.metadata.errorCount}个</span>`;
+      if (r.metadata.errorWords) tags += `<span class="meta-tag">${r.metadata.errorWords}</span>`;
+      break;
+    case 'homework':
+      if (r.metadata.completion==='done') tags += '<span class="meta-tag good">已完成</span>';
+      else if (r.metadata.completion==='partial') tags += '<span class="meta-tag warn">部分完成</span>';
+      if (r.metadata.duration!=null) tags += `<span class="meta-tag">用时${r.metadata.duration}分钟</span>`;
+      break;
+    case 'teacher_feedback':
+      if (r.metadata.subject) tags += `<span class="meta-tag">${r.metadata.subject} 反馈</span>`;
+      break;
+    case 'sport':
+      if (r.metadata.activity) tags += `<span class="meta-tag good">${r.metadata.activity} ${r.metadata.count}${r.metadata.unit||'个'}</span>`;
+      break;
+    case 'tutoring':
+      if (r.metadata.homeworkStatus==='done') tags += '<span class="meta-tag good">✅ 作业完成</span>';
+      else if (r.metadata.homeworkStatus==='partial') tags += '<span class="meta-tag warn">⚠️ 部分完成</span>';
+      else if (r.metadata.homeworkStatus==='not_done') tags += '<span class="meta-tag warn">❌ 未完成</span>';
+      if (r.metadata.performance==='excellent') tags += '<span class="meta-tag good">🌟 优秀</span>';
+      else if (r.metadata.performance==='good') tags += '<span class="meta-tag good">👍 良好</span>';
+      else if (r.metadata.performance==='normal') tags += '<span class="meta-tag">👌 一般</span>';
+      else if (r.metadata.performance==='poor') tags += '<span class="meta-tag warn">👎 需改进</span>';
+      break;
+    case 'diary':
+      if (r.metadata.mood==='happy') tags += '<span class="meta-tag good">😊 开心</span>';
+      else if (r.metadata.mood==='normal') tags += '<span class="meta-tag">😐 一般</span>';
+      else if (r.metadata.mood==='sad') tags += '<span class="meta-tag warn">😢 低落</span>';
+      else if (r.metadata.mood==='excited') tags += '<span class="meta-tag good">🤩 激动</span>';
+      break;
+  }
+  // Video tag for any record type with video data
+  if (r.metadata.videoData) tags += `<span class="meta-tag info" onclick="playTutorVideo('${r.id}')" style="cursor:pointer">📹 有视频</span>`;
+  // Image thumbnails
+  if (r.metadata.images && r.metadata.images.length > 0) tags += `<span class="meta-tag" onclick="viewImages('${r.id}')" style="cursor:pointer">🖼️ ${r.metadata.images.length}张图片</span>`;
+  if (tags) return '<div class="card-meta">'+tags+'</div>';
+  return '';
+}
+
+function viewImages(recordId) {
+  const records = DATA.getRecords();
+  const r = records.find(x => x.id === recordId);
+  if (!r || !r.metadata || !r.metadata.images) return;
+  let html = '<h3>🖼️ 查看图片</h3><div style="font-size:12px;color:#888;margin-bottom:8px">'+escapeHtml(r.content||'')+'</div>';
+  r.metadata.images.forEach(img => { html += '<img src="'+img+'" style="width:100%;border-radius:8px;margin-bottom:8px">' });
+  html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-outline btn-sm" onclick="closeModal()">关闭</button></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function renderLearning() {
+  const records = DATA.getRecords();
+  const grades = records.filter(r => r.type === 'grade').sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
+  const subjects = [...new Set(grades.map(g => g.metadata.subject))];
+  if (subjects.length === 0) {
+    document.getElementById('gradeSubjectFilter').innerHTML = '';
+    Object.values(chartInstances).forEach(c => { try { c.destroy() } catch(e) {} }); chartInstances = {};
+    ['dictationList','homeworkList','teacherFeedbackList'].forEach(id => document.getElementById(id).innerHTML = '<div class="empty-state"><div class="text">暂无数据</div></div>');
+    return;
+  }
+  let chips = '<span class="filter-chip'+(gradeSubFilter==='all'?' active':'')+'" onclick="setGradeSubject(\'all\')">全部</span>';
+  subjects.forEach(s => { chips += '<span class="filter-chip'+(gradeSubFilter===s?' active':'')+'" onclick="setGradeSubject(\''+s+'\')">'+s+'</span>' });
+  document.getElementById('gradeSubjectFilter').innerHTML = chips;
+
+  const filtered = gradeSubFilter === 'all' ? grades : grades.filter(g => g.metadata.subject === gradeSubFilter);
+  const labels = filtered.map(g => g.metadata.examName || fmtDateShort(g.timestamp));
+  const subjectGroups = {};
+  subjects.forEach(s => { const pts = filtered.filter(g => g.metadata.subject === s); if (pts.length > 0) subjectGroups[s] = pts });
+  const datasets = [];
+  Object.keys(subjectGroups).forEach(s => {
+    const pts = subjectGroups[s];
+    datasets.push({ label: s, data: labels.map(l => { const p = pts.find(g => (g.metadata.examName||fmtDateShort(g.timestamp))===l); return p?gradeToNum(p.metadata.grade):null }), borderColor: SUBJECT_COLORS[s]||'#888', tension: .3, pointRadius: 3 });
+  });
+  if (chartInstances.grade) { chartInstances.grade.destroy() }
+  const ctx = document.getElementById('gradeChart');
+  if (ctx && labels.length > 0) chartInstances.grade = new Chart(ctx, { type:'line', data:{labels,datasets}, options:{responsive:true,plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:12,font:{size:10}}}},scales:{y:{min:0,max:10,ticks:{stepSize:1,font:{size:9},callback:function(v){const rev={'10':'A+','9':'A','8':'A-','7':'B+','6':'B','5':'B-','4':'C','3':'C-','2':'D','1':'需努力'};return rev[v]||v}}}}}});
+  renderDictationList(records);
+  renderHomeworkList(records);
+  renderTeacherFeedbackList(records);
+}
+
+function setGradeSubject(s) { gradeSubFilter = s; renderLearning() }
+
+function renderDictationList(records) {
+  const dicts = records.filter(r => r.type === 'dictation').sort((a,b) => new Date(b.timestamp)-new Date(a.timestamp));
+  if (dicts.length === 0) { document.getElementById('dictationList').innerHTML = '<div class="empty-state"><div class="text">暂无听写记录</div></div>'; return }
+  let html = '';
+  dicts.forEach(d => {
+    const resultLabel = d.metadata && d.metadata.result === 'full_mark' ? '<span style="color:#388e3c">全部正确</span>' : '<span style="color:#e65100">错'+d.metadata.errorCount+'个</span>';
+    html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:500">${d.metadata.subject||'语文'} 听写</span>${resultLabel}<span style="font-size:11px;color:#bbb">${fmtDateShort(d.timestamp)}</span></div><div style="font-size:12px;color:#888;margin-top:4px">${d.content||''}</div></div>`;
+  });
+  document.getElementById('dictationList').innerHTML = html;
+}
+
+function renderHomeworkList(records) {
+  const hw = records.filter(r => r.type === 'homework').sort((a,b) => new Date(b.timestamp)-new Date(a.timestamp));
+  if (hw.length === 0) { document.getElementById('homeworkList').innerHTML = '<div class="empty-state"><div class="text">暂无作业记录</div></div>'; return }
+  let html = '';
+  hw.forEach(h => { html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:500">${h.metadata.subject||''}</span><span class="meta-tag good">已完成</span><span style="font-size:11px;color:#bbb">${fmtDateShort(h.timestamp)}</span></div><div style="font-size:12px;color:#888;margin-top:4px">${h.content||''}</div></div>` });
+  document.getElementById('homeworkList').innerHTML = html;
+}
+
+function renderTeacherFeedbackList(records) {
+  const fb = records.filter(r => r.type === 'teacher_feedback').sort((a,b) => new Date(b.timestamp)-new Date(a.timestamp));
+  if (fb.length === 0) { document.getElementById('teacherFeedbackList').innerHTML = '<div class="empty-state"><div class="text">暂无老师反馈</div></div>'; return }
+  let html = '';
+  fb.forEach(f => { html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:500">${f.metadata.subject||''} 反馈</span><span style="font-size:11px;color:#bbb">${fmtDateShort(f.timestamp)}</span></div><div style="font-size:12px;color:#888;margin-top:4px">${(f.content||'').slice(0,60)}...</div></div>` });
+  document.getElementById('teacherFeedbackList').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════
+//  PERMISSION UTILITIES
+// ══════════════════════════════════════════════════════════
+function canEdit(record) {
+  const s = DATA.getSession();
+  if (!s) return false;
+  if (s.rolePermission === 'admin') return true;
+  if (s.roleId === record.role) return true;
+  return false;
+}
+function canDelete(record) { return canEdit(record); }
+
+// ══════════════════════════════════════════════════════════
+//  TEMPLATES & RECORD FORM
+// ══════════════════════════════════════════════════════════
+function updateTemplateGrid() {
+  const allTemplates = [
+    {id:'grade-perfect',icon:'💯',label:'考试满分',hint:'科目·分数·考试名',type:'grade',color:'#3498db',defaults:{subject:'数学',score:100,maxScore:100,examName:'单元测试',content:'满分！'}},
+    {id:'dictation-ok',icon:'✏️',label:'听写全对',hint:'一键记录听写满分',type:'dictation',color:'#2ecc71',defaults:{subject:'语文',result:'full_mark',errorCount:0,content:'听写全部正确！'}},
+    {id:'homework-done',icon:'✅',label:'作业完成',hint:'科目·用时·质量',type:'homework',color:'#e67e22',defaults:{subject:'数学',completion:'done',duration:30,content:'作业全部完成。'}},
+    {id:'sport-rope',icon:'🪢',label:'跳绳打卡',hint:'个数·用时',type:'sport',color:'#1abc9c',defaults:{activity:'跳绳',count:150,unit:'个',content:'跳绳打卡完成！'}},
+    {id:'sport-run',icon:'🏃',label:'跑步打卡',hint:'距离·配速',type:'sport',color:'#27ae60',defaults:{activity:'跑步',count:1.5,unit:'公里',content:'跑步打卡完成！'}},
+    {id:'diary-good',icon:'😊',label:'今日开心',hint:'记录一个开心瞬间',type:'diary',color:'#9b59b6',defaults:{mood:'happy',content:'今天过得很开心！'}},
+    {id:'tutoring-done',icon:'🏫',label:'晚辅完成',hint:'作业完成·表现',type:'tutoring',color:'#f39c12',defaults:{homeworkStatus:'done',performance:'good',content:'晚辅顺利完成！'}},
+  ];
+  // For tutor role, only show tutoring quick template
+  let templates = allTemplates;
+  const s = DATA.getSession();
+  if (s && s.roleId === 'tutor') {
+    templates = allTemplates.filter(t => t.type === 'tutoring');
+  }
+  let html = '';
+  templates.forEach(t => { html += `<div class="template-item" onclick="useTemplate('${t.id}')" style="border-top:3px solid ${t.color}"><span class="icon">${t.icon}</span><span class="label">${t.label}</span><span class="hint">${t.hint}</span></div>` });
+  document.getElementById('templateGrid').innerHTML = html;
+}
+
+function useTemplate(tid) {
+  const templates = {
+    'grade-perfect':{type:'grade',defaults:{subject:'数学',grade:'A+',maxScore:100,examName:'单元测试',content:'满分！'}},
+    'dictation-ok':{type:'dictation',defaults:{subject:'语文',result:'full_mark',errorCount:0,errorWords:'',content:'听写全部正确！'}},
+    'homework-done':{type:'homework',defaults:{subject:'数学',completion:'done',duration:30,quality:'good',content:'作业全部完成。'}},
+    'sport-rope':{type:'sport',defaults:{activity:'跳绳',count:150,unit:'个',duration:null,content:'跳绳打卡完成！'}},
+    'sport-run':{type:'sport',defaults:{activity:'跑步',count:1.5,unit:'公里',duration:null,content:'跑步打卡完成！'}},
+    'diary-good':{type:'diary',defaults:{mood:'happy',content:'今天过得很开心！',images:[]}},
+    'tutoring-done':{type:'tutoring',defaults:{homeworkStatus:'done',performance:'good',content:'晚辅顺利完成！'}},
+  };
+  const t = templates[tid];
+  if (!t) return;
+  document.getElementById('recordType').value = t.type;
+  updateRecordForm();
+  setTimeout(() => {
+    Object.keys(t.defaults).forEach(k => { const el = document.getElementById('field_'+k); if (el) el.value = t.defaults[k] });
+    if (t.defaults.content) { const el = document.getElementById('field_content'); if (el) el.value = t.defaults.content }
+  }, 100);
+  switchTab('record');
+}
+
+function updateRecordForm() {
+  const type = document.getElementById('recordType').value;
+  // Clear media when switching record type
+  window._mediaImages = []; window._mediaVideo = null;
+  renderMediaPreviews();
+  let html = '';
+
+  // ── Type-specific quick actions ──
+  html += '<div class="quick-actions">';
+  switch(type) {
+    case 'diary':
+      html += '<div class="action-btn" onclick="attachPhoto()" style="--accent:#9b59b6"><span class="action-icon">📷</span><span class="action-label">拍照记录</span><span class="action-sub">存为图片</span></div>';
+      html += '<div class="action-btn" onclick="attachAlbum()" style="--accent:#2ecc71"><span class="action-icon">🖼️</span><span class="action-label">选照片</span><span class="action-sub">从相册</span></div>';
+      html += '<div class="action-btn" onclick="attachVideo()" style="--accent:#e74c3c"><span class="action-icon">🎬</span><span class="action-label">录视频</span><span class="action-sub">拍摄</span></div>';
+      break;
+    case 'grade':
+      html += '<div class="action-btn" onclick="ocrFromCamera()" style="--accent:#3498db"><span class="action-icon">📷</span><span class="action-label">拍照识别</span><span class="action-sub">OCR自动填</span></div>';
+      html += '<div class="action-btn" onclick="ocrFromAlbum()" style="--accent:#2ecc71"><span class="action-icon">🖼️</span><span class="action-label">相册识别</span><span class="action-sub">OCR自动填</span></div>';
+      html += '<div class="action-btn" onclick="ocrFromLink()" style="--accent:#f39c12"><span class="action-icon">🔗</span><span class="action-label">粘贴链接</span><span class="action-sub">图片URL</span></div>';
+      break;
+    case 'dictation':
+      html += '<div class="action-btn" onclick="ocrFromCamera()" style="--accent:#3498db"><span class="action-icon">📷</span><span class="action-label">拍照识别</span><span class="action-sub">OCR自动填</span></div>';
+      html += '<div class="action-btn" onclick="ocrFromAlbum()" style="--accent:#2ecc71"><span class="action-icon">🖼️</span><span class="action-label">相册识别</span><span class="action-sub">OCR自动填</span></div>';
+      break;
+    case 'homework':
+      html += '<div class="action-btn" onclick="attachPhoto()" style="--accent:#3498db"><span class="action-icon">📷</span><span class="action-label">拍照</span><span class="action-sub">作业照片</span></div>';
+      html += '<div class="action-btn" onclick="attachAlbum()" style="--accent:#2ecc71"><span class="action-icon">🖼️</span><span class="action-label">选照片</span><span class="action-sub">从相册</span></div>';
+      break;
+    case 'teacher_feedback':
+      html += '<div class="action-btn" onclick="attachPhoto()" style="--accent:#3498db"><span class="action-icon">📷</span><span class="action-label">拍照</span><span class="action-sub">聊天截图</span></div>';
+      html += '<div class="action-btn" onclick="attachAlbum()" style="--accent:#2ecc71"><span class="action-icon">🖼️</span><span class="action-label">选照片</span><span class="action-sub">聊天截图</span></div>';
+      html += '<div class="action-btn" onclick="ocrFromLink()" style="--accent:#f39c12"><span class="action-icon">🔗</span><span class="action-label">粘贴链接</span><span class="action-sub">OCR识别</span></div>';
+      break;
+    case 'tutoring':
+      html += '<div class="action-btn" onclick="attachPhoto()" style="--accent:#3498db"><span class="action-icon">📷</span><span class="action-label">拍照</span><span class="action-sub">现场照片</span></div>';
+      html += '<div class="action-btn" onclick="attachAlbum()" style="--accent:#2ecc71"><span class="action-icon">🖼️</span><span class="action-label">选照片</span><span class="action-sub">从相册</span></div>';
+      html += '<div class="action-btn" onclick="attachVideo()" style="--accent:#e74c3c"><span class="action-icon">🎬</span><span class="action-label">录视频</span><span class="action-sub">拍摄</span></div>';
+      break;
+    case 'sport':
+      html += '<div class="action-btn" onclick="attachPhoto()" style="--accent:#3498db"><span class="action-icon">📷</span><span class="action-label">拍照</span><span class="action-sub">运动照片</span></div>';
+      html += '<div class="action-btn" onclick="attachAlbum()" style="--accent:#2ecc71"><span class="action-icon">🖼️</span><span class="action-label">选照片</span><span class="action-sub">从相册</span></div>';
+      html += '<div class="action-btn" onclick="attachVideo()" style="--accent:#e74c3c"><span class="action-icon">🎬</span><span class="action-label">录视频</span><span class="action-sub">拍摄</span></div>';
+      break;
+  }
+  html += '</div>';
+
+  // ── Link input row (for OCR via URL) ──
+  html += '<div class="link-input-row" id="linkInputRow" style="display:none">';
+  html += '<input type="text" id="ocrImageUrl" placeholder="粘贴图片URL后自动识别..." style="flex:1;font-size:12px;padding:8px 12px;border:1.5px solid #f39c12;border-radius:8px;outline:none">';
+  html += '<button class="btn btn-primary btn-sm" onclick="handleOCRUrl()" style="flex-shrink:0;background:#f39c12">识别</button></div>';
+
+  // ── Media preview area ──
+  html += '<div class="media-previews" id="mediaPreviews"></div>';
+
+  // ── Form fields ──
+  html += '<div class="form-group"><label>内容</label><textarea id="field_content" rows="2" placeholder="记录内容..."></textarea></div>';
+  switch(type) {
+    case 'grade':
+      html += '<div class="form-row"><div class="form-group"><label>科目</label><select id="field_subject">'+Object.keys(SUBJECT_COLORS).map(s=>'<option>'+s+'</option>').join('')+'</select></div><div class="form-group"><label>等级</label><select id="field_grade"><option>A+</option><option>A</option><option>A-</option><option>B+</option><option>B</option><option>B-</option><option>C</option><option>需努力</option></select></div><div class="form-group"><label>满分</label><input type="number" id="field_maxScore" value="100"></div></div>';
+      html += '<div class="form-group"><label>考试名称</label><input type="text" id="field_examName" placeholder="如：期中考试"></div>';
+      break;
+    case 'dictation':
+      html += '<div class="form-group"><label>科目</label><select id="field_subject"><option>语文</option><option>英语</option></select></div><div class="form-group"><label>结果</label><select id="field_result"><option value="full_mark">全部正确</option><option value="errors">有错误</option><option value="not_submitted">未交</option></select></div><div class="form-row"><div class="form-group"><label>错几个</label><input type="number" id="field_errorCount" value="0"></div><div class="form-group"><label>错误字词</label><input type="text" id="field_errorWords" placeholder="逗号分隔"></div></div>';
+      break;
+    case 'homework':
+      html += '<div class="form-group"><label>科目</label><input type="text" id="field_subject" placeholder="如：数学"></div><div class="form-row"><div class="form-group"><label>完成状态</label><select id="field_completion"><option value="done">已完成</option><option value="partial">部分完成</option><option value="not_done">未完成</option></select></div><div class="form-group"><label>用时(分钟)</label><input type="number" id="field_duration" value="30"></div></div>';
+      break;
+    case 'teacher_feedback':
+      html += '<div class="form-group"><label>科目</label><select id="field_subject"><option>数学</option><option>语文</option><option>英语</option></select></div><div class="form-group"><label>原始群消息</label><textarea id="field_rawText" rows="3" placeholder="粘贴老师发的完整消息..."></textarea></div>';
+      break;
+    case 'tutoring':
+      html += '<div class="form-row"><div class="form-group"><label>作业状态</label><select id="field_homeworkStatus"><option value="done">✅ 已完成</option><option value="partial">⚠️ 部分完成</option><option value="not_done">❌ 未完成</option></select></div><div class="form-group"><label>表现</label><select id="field_performance"><option value="excellent">🌟 优秀</option><option value="good">👍 良好</option><option value="normal">👌 一般</option><option value="poor">👎 需改进</option></select></div></div>';
+      break;
+    case 'sport':
+      html += '<div class="form-row"><div class="form-group"><label>运动项目</label><select id="field_activity"><option>跳绳</option><option>跑步</option><option>游泳</option><option>篮球</option><option>足球</option><option>其他</option></select></div><div class="form-group"><label>数量</label><input type="number" id="field_count" value="100"></div><div class="form-group"><label>单位</label><select id="field_unit"><option>个</option><option>公里</option><option>米</option><option>分钟</option><option>圈</option></select></div></div>';
+      break;
+    case 'diary':
+      html += '<div class="form-group"><label>心情</label><select id="field_mood"><option value="happy">开心</option><option value="normal">一般</option><option value="sad">低落</option><option value="excited">激动</option></select></div>';
+      break;
+  }
+  html += '<input type="hidden" id="field_role" value="'+(DATA.getSession()?.roleId||'dad')+'">';
+  document.getElementById('dynamicForm').innerHTML = html;
+  renderMediaPreviews();
+}
+
+function renderMediaPreviews() {
+  const container = document.getElementById('mediaPreviews');
+  if (!container) return;
+  const images = window._mediaImages || [];
+  const video = window._mediaVideo;
+  let html = '';
+  images.forEach((img, i) => {
+    html += '<div class="media-preview-item"><img src="'+img.data+'" alt="'+img.name+'"><div class="media-remove" onclick="removeMediaImage('+i+')">✕</div></div>';
+  });
+  if (video) {
+    html += '<div class="media-preview-item"><video src="'+video.data+'" muted></video><div class="media-remove" onclick="removeMediaVideo()">✕</div></div>';
+  }
+  // Add more button (fits within the same row)
+  html += '<div class="media-add-btn" onclick="attachPhoto()">+</div>';
+  container.innerHTML = html;
+}
+
+function attachPhoto() { document.getElementById('photoCameraInput').click() }
+function attachAlbum() { document.getElementById('photoAlbumInput').click() }
+function attachVideo() { document.getElementById('videoInput').click() }
+function ocrFromCamera() { document.getElementById('cameraInput').click() }
+function ocrFromAlbum() { document.getElementById('ocrFileInput').click() }
+function ocrFromLink() {
+  const row = document.getElementById('linkInputRow');
+  if (row) { row.style.display = row.style.display==='none'?'flex':'none'; if (row.style.display==='flex') document.getElementById('ocrImageUrl').focus() }
+}
+
+function removeMediaImage(i) { window._mediaImages.splice(i,1); renderMediaPreviews() }
+function removeMediaVideo() { window._mediaVideo = null; renderMediaPreviews() }
+
+function onPhotoAttached(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    window._mediaImages = window._mediaImages || [];
+    window._mediaImages.push({data: e.target.result, name: file.name});
+    renderMediaPreviews();
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function submitRecord() {
+  const type = document.getElementById('recordType').value;
+  const content = (document.getElementById('field_content')||{}).value || '';
+  const s = DATA.getSession();
+  const role = s ? s.roleId : 'dad';
+
+  // Tutor can only record tutoring
+  if (s && s.roleId === 'tutor' && type !== 'tutoring') { showToast('晚辅老师只能记录晚辅内容'); return; }
+  const metadata = {};
+  switch(type) {
+    case 'grade': metadata.subject=(document.getElementById('field_subject')||{}).value||'数学'; metadata.grade=(document.getElementById('field_grade')||{}).value||'A'; metadata.maxScore=parseInt((document.getElementById('field_maxScore')||{}).value)||100; metadata.examName=(document.getElementById('field_examName')||{}).value||''; break;
+    case 'dictation': metadata.subject=(document.getElementById('field_subject')||{}).value||'语文'; metadata.result=(document.getElementById('field_result')||{}).value||'full_mark'; metadata.errorCount=parseInt((document.getElementById('field_errorCount')||{}).value)||0; metadata.errorWords=(document.getElementById('field_errorWords')||{}).value||''; break;
+    case 'homework': metadata.subject=(document.getElementById('field_subject')||{}).value||''; metadata.completion=(document.getElementById('field_completion')||{}).value||'done'; metadata.duration=parseInt((document.getElementById('field_duration')||{}).value)||0; break;
+    case 'teacher_feedback': metadata.subject=(document.getElementById('field_subject')||{}).value||''; metadata.rawText=(document.getElementById('field_rawText')||{}).value||''; break;
+    case 'tutoring': metadata.homeworkStatus=(document.getElementById('field_homeworkStatus')||{}).value||'done'; metadata.performance=(document.getElementById('field_performance')||{}).value||'good'; break;
+    case 'sport': metadata.activity=(document.getElementById('field_activity')||{}).value||'跳绳'; metadata.count=parseFloat((document.getElementById('field_count')||{}).value)||0; metadata.unit=(document.getElementById('field_unit')||{}).value||'个'; break;
+    case 'diary': metadata.mood=(document.getElementById('field_mood')||{}).value||'happy'; break;
+  }
+  // Attach media (images + video)
+  if (window._mediaImages && window._mediaImages.length > 0) metadata.images = window._mediaImages.map(img => img.data);
+  if (window._mediaVideo && window._mediaVideo.data) { metadata.videoData = window._mediaVideo.data; metadata.videoName = window._mediaVideo.name }
+  const record = { id: editingId||uid(), type, role, timestamp: new Date().toISOString(), content, metadata };
+  let records = DATA.getRecords();
+  if (editingId) { records = records.map(r => r.id===editingId ? record : r); editingId = null } else { records.unshift(record) }
+  DATA.saveRecords(records);
+  // Clear media temp data
+  window._tutorVideoData = ''; window._tutorVideoName = '';
+  window._recordVideoData = ''; window._recordVideoName = '';
+  window._mediaImages = []; window._mediaVideo = null;
+  document.getElementById('tutorVideoPreview') && (document.getElementById('tutorVideoPreview').style.display = 'none');
+  showToast(editingId ? '记录已更新' : '记录已保存');
+  achievementCheckAll();
+  renderAll();
+  switchTab(s && s.roleId === 'tutor' ? 'record' : 'timeline');
+}
+
+function editRecord(id) {
+  const records = DATA.getRecords();
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  if (!canEdit(r)) { showToast('你只能编辑自己的记录'); return; }
+  editingId = id;
+  // Restore media
+  window._mediaImages = (r.metadata && r.metadata.images) ? r.metadata.images.map(d => ({data:d,name:''})) : [];
+  window._mediaVideo = (r.metadata && r.metadata.videoData) ? {data:r.metadata.videoData,name:r.metadata.videoName||''} : null;
+  document.getElementById('recordType').value = r.type;
+  updateRecordForm();
+  setTimeout(() => {
+    const el = document.getElementById('field_content'); if (el) el.value = r.content||'';
+    if (r.metadata) Object.keys(r.metadata).forEach(k => {
+      if (k==='images'||k==='videoData'||k==='videoName') return;
+      const f = document.getElementById('field_'+k); if (f) f.value = r.metadata[k]===null?'':r.metadata[k];
+    });
+    const rl = document.getElementById('field_role'); if (rl) rl.value = r.role;
+  }, 100);
+  switchTab('record');
+  document.getElementById('phoneBody').scrollTop = 0;
+}
+
+// ══════════════════════════════════════════════════════════
+//  TUTOR VIDEO UPLOAD
+// ══════════════════════════════════════════════════════════
+function onTutorVideoSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  // Size limit: 50MB
+  if (file.size > 50 * 1024 * 1024) {
+    showToast('视频文件不能超过50MB');
+    event.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    window._tutorVideoData = e.target.result;
+    window._tutorVideoName = file.name;
+    const preview = document.getElementById('tutorVideoPreview');
+    const nameEl = document.getElementById('tutorVideoName');
+    const player = document.getElementById('tutorVideoPlayer');
+    if (preview) preview.style.display = '';
+    if (nameEl) nameEl.textContent = '📹 ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + 'MB)';
+    if (player) { player.src = e.target.result; player.style.display = ''; }
+  };
+  reader.readAsDataURL(file);
+}
+
+// Play a recorded tutor video in modal
+function playTutorVideo(recordId) {
+  const records = DATA.getRecords();
+  const r = records.find(x => x.id === recordId);
+  if (!r || !r.metadata || !r.metadata.videoData) { showToast('视频数据不存在'); return; }
+  const typeLabel = RECORD_TYPES.find(t => t.id === r.type);
+  const title = '📹 ' + (typeLabel ? typeLabel.label : '视频记录');
+  document.getElementById('modalContent').innerHTML =
+    '<h3>'+title+'</h3><div style="font-size:12px;color:#888;margin-bottom:8px">'+escapeHtml(r.content||'')+'</div>'+
+    '<video src="'+r.metadata.videoData+'" controls style="width:100%;max-height:360px;border-radius:8px"></video>'+
+    '<div style="margin-top:12px;text-align:right"><button class="btn btn-outline btn-sm" onclick="closeModal()">关闭</button></div>';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function deleteRecord(id) {
+  const records = DATA.getRecords();
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  if (!canDelete(r)) { showToast('你只能删除自己的记录'); return; }
+  if (!confirm('确定要删除这条记录吗？')) return;
+  DATA.saveRecords(records.filter(x => x.id !== id));
+  showToast('记录已删除');
+  renderAll();
+}
+
+// ══════════════════════════════════════════════════════════
+//  OCR (unchanged)
+// ══════════════════════════════════════════════════════════
+// 云端部署走相对路径，本地开发走 localhost
+const PROXY_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:') ? 'http://localhost:3567' : '';
+
+async function checkProxyStatus() {
+  let connected = false;
+  try { const res = await fetch(PROXY_URL+'/api/health'); connected = res.ok } catch(e) {}
+  const sEl = document.getElementById('ocrStatus');
+  if (sEl) {
+    if (connected) { sEl.textContent = '✅ OCR 服务已连接，点击上传截图即可识别'; sEl.style.color = '#6b8f71' }
+    else if (PROXY_URL) { sEl.textContent = '⚠️ 本地代理未启动：node server/proxy.js（点击仍可用演示数据）'; sEl.style.color = '#e8a838' }
+    else { sEl.textContent = '✅ 云端 OCR 服务已就绪'; sEl.style.color = '#6b8f71'; connected = true }
+  }
+  const box = document.getElementById('apiStatusBox');
+  if (box) {
+    if (connected) { box.innerHTML = '✅ <b>OCR 服务正常</b> — 可上传截图识别'; box.style.color = '#6b8f71' }
+    else if (PROXY_URL) { box.innerHTML = '⚠️ <b>代理未启动</b> — 终端执行 <code style="background:#eee;padding:1px 4px;border-radius:3px">node server/proxy.js</code> 启动后刷新'; box.style.color = '#e8a838' }
+    else { box.innerHTML = '✅ <b>云端 OCR 已就绪</b>'; box.style.color = '#6b8f71'; connected = true }
+  }
+  return connected;
+}
+
+function handleOCRUpload() { document.getElementById('ocrFileInput').click() }
+
+// ══════════════════════════════════════════════════════════
+//  QUICK ACTIONS — video select handler
+// ══════════════════════════════════════════════════════════
+function onQuickVideoSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 50 * 1024 * 1024) { showToast('视频文件不能超过50MB'); event.target.value = ''; return }
+  document.getElementById('modalContent').innerHTML = '<h3>🎬 视频处理中</h3><div style="padding:12px;font-size:13px;color:#666">正在读取视频...</div>';
+  document.getElementById('modalOverlay').classList.add('show');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    window._mediaVideo = {data: e.target.result, name: file.name};
+    document.getElementById('modalOverlay').classList.remove('show');
+    renderMediaPreviews();
+    showToast('视频已加载');
+  };
+  reader.onerror = function() { document.getElementById('modalOverlay').classList.remove('show'); showToast('视频读取失败'); };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+async function handleOCRUrl() {
+  const url = document.getElementById('ocrImageUrl').value.trim();
+  if (!url) { showToast('请先粘贴图片URL'); return }
+  document.getElementById('modalContent').innerHTML = '<h3>📸 OCR 识别中</h3><div style="padding:12px;font-size:13px;color:#666">🔍 正在下载图片并进行文字识别...</div>';
+  document.getElementById('modalOverlay').classList.add('show');
+  try {
+    const res = await fetch(PROXY_URL+'/api/ocr', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({imageUrl:url,halfToFull:true}) });
+    handleOCRResponse(await res.json());
+  } catch(err) { showOCRError('无法连接本地代理（'+err.message+'），将使用演示数据') }
+}
+
+async function onOCRFileSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  document.getElementById('modalContent').innerHTML = '<h3>📸 OCR 识别中</h3><div style="padding:12px;font-size:13px;color:#666">🔍 正在上传图片并进行文字识别...</div>';
+  document.getElementById('modalOverlay').classList.add('show');
+  try {
+    const base64 = await fileToBase64(file);
+    const base64Clean = base64.split(',')[1];
+    const res = await fetch(PROXY_URL+'/api/ocr', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({imageBase64:base64Clean,halfToFull:true}) });
+    handleOCRResponse(await res.json());
+  } catch(err) { showOCRError('无法连接本地代理（'+err.message+'），将使用演示数据') }
+}
+
+function handleOCRResponse(result) {
+  if (result.code===10000 && result.data && result.data.line_texts) {
+    const lines = result.data.line_texts;
+    const probs = result.data.line_probs || [];
+    showOCRResult(lines, probs);
+  } else { showOCRError('OCR 返回错误：'+(result.message||result.error||'未知错误')) }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve,reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function showOCRResult(lines, probs) {
+  const rawText = lines.join('\n');
+  const avgProb = probs.length > 0 ? Math.round(probs.reduce((a,b)=>a+b,0)/probs.length*100) : null;
+  const probColor = avgProb && avgProb>=90 ? '#6b8f71' : avgProb && avgProb>=70 ? '#e8a838' : '#e88';
+  let html = '<h3>📸 OCR 识别结果</h3>';
+  html += '<div style="padding:8px;margin:4px 0;border-radius:8px;background:#f0f7f0;font-size:12px">🔍 识别到 <b>'+lines.length+'</b> 行文字';
+  if (avgProb) html += ' · 置信度 <b style="color:'+probColor+'">'+avgProb+'%</b>';
+  html += '</div><div style="padding:10px;margin:8px 0;border-radius:8px;background:#faf8f5;font-size:12px;max-height:200px;overflow-y:auto;white-space:pre-wrap;line-height:1.6">'+rawText+'</div>';
+  html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-outline btn-sm" onclick="closeModal()" style="margin-right:6px">取消</button><button class="btn btn-primary btn-sm" onclick="ocrResultFillRaw(\''+escapeHtml(rawText)+'\')">直接填入原文</button><button class="btn btn-primary btn-sm" style="margin-left:6px;background:#e67e22" onclick="ocrResultSmartParse(\''+escapeHtml(rawText)+'\')">🤖 智能解析</button></div>';
+  window._ocrRawText = rawText;
+  document.getElementById('modalContent').innerHTML = html;
+}
+
+function ocrResultFillRaw(rawText) {
+  closeModal();
+  document.getElementById('recordType').value = 'teacher_feedback';
+  updateRecordForm();
+  setTimeout(() => {
+    try { document.getElementById('field_rawText').value = rawText } catch(e) {}
+    try { document.getElementById('field_content').value = '老师群消息截图识别结果' } catch(e) {}
+  }, 150);
+  switchTab('record');
+}
+
+async function ocrResultSmartParse(rawText) {
+  const s = DATA.getSession();
+  const child = getCurrentChild();
+  document.getElementById('modalContent').innerHTML = '<h3>🤖 智能解析中</h3><div style="padding:12px;font-size:13px;color:#666">🔍 正在调用豆包大模型解析并自动填充表单...</div>';
+  try {
+    const res = await fetch(PROXY_URL+'/api/parse', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ ocrText: rawText, studentNumber: child?child.studentNumber:'29', studentName: child?child.name:'皓皓' }),
+    });
+    const result = await res.json();
+    if (result.code===10000 && result.data) {
+      closeModal();
+      fillRecordFormWithParsed(result.data);
+    } else {
+      showToast('智能解析失败：'+(result.error||'未知错误')+'，将直接使用原文');
+      closeModal();
+      ocrResultFillRaw(rawText);
+    }
+  } catch(err) {
+    showToast('智能解析不可用（'+err.message+'），将直接使用原文');
+    closeModal();
+    ocrResultFillRaw(rawText);
+  }
+}
+
+function showSmartParseResult(data) {
+  // 保留函数：如需先展示解析结果再确认，可调用此函数
+  const child = getCurrentChild();
+  let html = '<h3>🤖 智能解析结果</h3><div style="font-size:11px;color:#6b8f71;margin-bottom:8px">✅ 豆包大模型已自动识别以下字段</div><table style="width:100%;font-size:12px;border-collapse:collapse">';
+  [{key:'subject',label:'科目'},{key:'examName',label:'考试/测验'},{key:'grade',label:(child?child.name:'皓皓')+'的等级'},{key:'studentNumber',label:'匹配学号'},{key:'content',label:'内容摘要'},{key:'recordType',label:'记录类型'}].forEach(f => { const v=data[f.key]||'-'; html += '<tr><td style="padding:4px 8px;color:#999;white-space:nowrap">'+f.label+'</td><td style="padding:4px 8px"><b>'+escapeHtml(String(v))+'</b></td></tr>' });
+  html += '</table>';
+  if (data.allResults) html += '<div style="margin-top:8px;padding:6px 8px;border-radius:6px;background:#faf8f5;font-size:11px;color:#666;max-height:80px;overflow-y:auto">📋 完整分布：'+escapeHtml(data.allResults)+'</div>';
+  html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-outline btn-sm" onclick="closeModal()" style="margin-right:6px">取消</button><button class="btn btn-primary btn-sm" id="modalConfirmBtn">✅ 确认并填入表单</button></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalConfirmBtn').onclick = () => { closeModal(); fillRecordFormWithParsed(data) };
+}
+
+function safeSetField(id, value) {
+  const el = document.getElementById(id);
+  if (!el || value === null || value === undefined || value === '') return;
+  if (el.tagName === 'SELECT') {
+    const hasOption = Array.from(el.options).some(o => o.value === String(value));
+    if (hasOption) el.value = value;
+  } else {
+    el.value = value;
+  }
+}
+
+function safeSetNumberField(id, value) {
+  const el = document.getElementById(id);
+  if (!el || value === null || value === undefined || value === '') return;
+  const n = Number(value);
+  if (!isNaN(n)) el.value = n;
+}
+
+function fillRecordFormWithParsed(data) {
+  const rt = data.recordType || 'teacher_feedback';
+  document.getElementById('recordType').value = rt;
+  updateRecordForm();
+  setTimeout(() => {
+    // Common fields
+    safeSetField('field_subject', data.subject);
+    safeSetField('field_examName', data.examName);
+    safeSetField('field_content', data.content);
+
+    // Grade
+    safeSetField('field_grade', data.grade || data.score);
+    safeSetNumberField('field_maxScore', data.maxScore);
+
+    // Dictation
+    safeSetField('field_result', data.result);
+    safeSetNumberField('field_errorCount', data.errorCount);
+    safeSetField('field_errorWords', data.errorWords);
+
+    // Homework
+    safeSetField('field_completion', data.completion);
+    safeSetNumberField('field_duration', data.duration);
+    safeSetField('field_quality', data.quality);
+
+    // Teacher feedback
+    safeSetField('field_rawText', data.rawText || data.allResults);
+
+    // Tutoring
+    safeSetField('field_homeworkStatus', data.homeworkStatus);
+    safeSetField('field_performance', data.performance);
+
+    // Sport
+    safeSetField('field_activity', data.activity);
+    safeSetNumberField('field_count', data.count);
+    safeSetField('field_unit', data.unit);
+
+    // Diary
+    safeSetField('field_mood', data.mood);
+  }, 200);
+  switchTab('record');
+  showToast('已智能解析并自动填充，请检查保存');
+}
+
+function showOCRError(errMsg) {
+  let html = '<h3>⚠️ OCR 识别</h3><div style="padding:8px;margin:4px 0;border-radius:8px;background:#fff8e1;font-size:12px;color:#e8a838">'+errMsg+'</div><div style="padding:8px;margin:4px 0;border-radius:8px;background:#faf8f5;font-size:12px;white-space:pre-line">🤖 <b>演示模式</b>\n使用模拟的识别结果继续测试</div><div style="margin-top:12px;text-align:right"><button class="btn btn-outline btn-sm" onclick="closeModal()" style="margin-right:6px">取消</button><button class="btn btn-primary btn-sm" id="modalConfirmBtn">使用演示数据</button></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalConfirmBtn').onclick = () => {
+    closeModal();
+    document.getElementById('recordType').value = 'teacher_feedback';
+    updateRecordForm();
+    setTimeout(() => {
+      try { document.getElementById('field_subject').value='数学' } catch(e) {}
+      try { document.getElementById('field_rawText').value='A+：5/8/12/15/29/22/25/28/30；A：1/2/3/7/9/11/13/16/20/23/26' } catch(e) {}
+      try { document.getElementById('field_content').value='数学期末复习综合过关：获得A+，表现优秀！' } catch(e) {}
+    }, 150);
+    switchTab('record');
+  };
+}
+
+function closeModal(e) { if (e && e.target !== document.getElementById('modalOverlay')) return; document.getElementById('modalOverlay').classList.remove('show') }
+
+// ══════════════════════════════════════════════════════════
+//  GROWTH & SETTINGS
+// ══════════════════════════════════════════════════════════
+function renderGrowth() {
+  const records = DATA.getRecords();
+  const unlocked = DATA.getAchievements();
+  const uCount = Object.keys(unlocked).length;
+  const tCount = ACHIEVEMENTS.length;
+  document.getElementById('unlockedCount').textContent = uCount;
+  document.getElementById('totalAchCount').textContent = tCount;
+  document.getElementById('achProgress').textContent = Math.round(uCount/tCount*100)+'%';
+  document.getElementById('achBar').style.width = (uCount/tCount*100)+'%';
+  let chips = '<span class="filter-chip'+(achCatFilter==='全部'?' active':'')+'" onclick="setAchFilter(\'全部\')">全部</span>';
+  ['学习','运动','习惯','里程碑'].forEach(c=>{chips+='<span class="filter-chip'+(achCatFilter===c?' active':'')+'" onclick="setAchFilter(\''+c+'\')">'+c+'</span>'});
+  document.getElementById('achCategoryFilter').innerHTML = chips;
+  let html = '';
+  const filtered = achCatFilter==='全部'?ACHIEVEMENTS:ACHIEVEMENTS.filter(a=>a.category===achCatFilter);
+  filtered.forEach(a=>{const u=unlocked[a.id];html+='<div class="achievement-card"><div class="badge '+(u?'unlocked':'locked')+'">'+a.icon+'</div><div class="info"><div class="name">'+a.name+'</div><div class="desc">'+a.desc+'</div>'+(u?'<div class="date">解锁于 '+fmtDateShort(u.unlockedAt)+'</div>':'<div class="date">未解锁</div>')+'</div></div>'});
+  document.getElementById('achievementList').innerHTML = html||'<div class="empty-state"><div class="text">暂无成就</div></div>';
+  const sports = records.filter(r=>r.type==='sport');
+  let jumpRope=0,runTotal=0,sportDaysSet=new Set();
+  sports.forEach(s=>{if(s.metadata.activity==='跳绳')jumpRope+=s.metadata.count||0;if(s.metadata.activity==='跑步')runTotal+=s.metadata.count||0;sportDaysSet.add(fmtDateShort(s.timestamp))});
+  document.getElementById('jumpRopeTotal').textContent=jumpRope;
+  document.getElementById('runTotal').textContent=runTotal.toFixed(1);
+  document.getElementById('sportDays').textContent=sportDaysSet.size;
+  const typeCount={};records.forEach(r=>{typeCount[r.type]=(typeCount[r.type]||0)+1});
+  if(chartInstances.typeDist){chartInstances.typeDist.destroy()}
+  const tctx=document.getElementById('typeDistChart');
+  if(tctx) chartInstances.typeDist=new Chart(tctx,{type:'bar',data:{labels:RECORD_TYPES.map(t=>typeLabel(t.id)),datasets:[{data:RECORD_TYPES.map(t=>typeCount[t.id]||0),backgroundColor:RECORD_TYPES.map(t=>typeColor(t.id))}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{stepSize:1,font:{size:9}}}}}});
+}
+function setAchFilter(f){achCatFilter=f;renderGrowth()}
+
+function renderSettings() {
+  const s = DATA.getSession();
+  const child = getCurrentChild();
+  const fa = DATA.getFamilyAccount();
+  const isAdmin = s && s.rolePermission === 'admin';
+  const roleObj = s ? ROLES.find(r => r.id === s.roleId) : ROLES[0];
+
+  // Child profile
+  const sel = document.getElementById('studentNumber');
+  sel.innerHTML = '';
+  for (let i=1;i<=60;i++) sel.innerHTML += '<option value="'+i+'"'+(child&&child.studentNumber==String(i)?' selected':'')+'>'+i+'</option>';
+  document.getElementById('childName').value = child?child.name:'';
+  document.getElementById('childNick').value = child?child.nick:'';
+  document.getElementById('childGrade').value = child?child.grade:'小学一年级';
+  document.getElementById('childAge').value = child?child.age:7;
+
+  // Disable child profile inputs for limited users
+  const inputs = document.querySelectorAll('#childProfileCard input, #childProfileCard select');
+  inputs.forEach(el => { if (isAdmin) el.removeAttribute('disabled'); else el.setAttribute('disabled','disabled') });
+
+  // Current role
+  document.getElementById('settingsRoleIcon').textContent = roleObj.icon;
+  document.getElementById('settingsRoleLabel').textContent = roleObj.label;
+  document.getElementById('settingsRolePerm').textContent = isAdmin ? '⭐ 管理员（可管理所有记录和设置）' : '📝 普通成员（只能编辑自己的记录）';
+  document.getElementById('currentRoleDisplay').textContent = roleObj.icon + ' ' + roleObj.label;
+
+  // Admin-only sections
+  document.getElementById('roleMgmtTitle').style.display = isAdmin ? '' : 'none';
+  document.getElementById('roleMgmtCard').style.display = isAdmin ? '' : 'none';
+  document.getElementById('familyInfoTitle').style.display = isAdmin ? '' : 'none';
+  document.getElementById('familyInfoCard').style.display = isAdmin ? '' : 'none';
+  document.getElementById('adminOnlySection').style.display = isAdmin ? '' : 'none';
+
+  // Family info
+  if (fa && child) {
+    document.getElementById('currentFamilyName').textContent = fa.familyName || '—';
+    document.getElementById('currentChildName').textContent = child.name;
+  }
+
+  // Role management list (admin only)
+  if (isAdmin) {
+    const rp = DATA.getRolePasswords();
+    let rmHtml = '';
+    ROLES.forEach(r => {
+      const hasPw = !!rp[r.id];
+      const isAdminRole = r.permission === 'admin';
+      rmHtml += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0">
+        <span>${r.icon} ${r.label} ${isAdminRole?'⭐':''}</span>
+        <span style="font-size:11px;color:#888;margin-right:8px">${isAdminRole ? '使用管理员密码' : (hasPw ? '✅ 已设置' : '⚠️ 未设置')}</span>
+        ${isAdminRole ? '' : `<button class="btn btn-outline btn-sm" onclick="setRolePassword('${r.id}')" style="padding:2px 8px;font-size:10px">${hasPw?'修改密码':'设置密码'}</button>`}
+      </div>`;
+    });
+    document.getElementById('roleMgmtList').innerHTML = rmHtml;
+  }
+}
+
+function setRolePassword(roleId) {
+  const s = DATA.getSession();
+  if (!s || s.rolePermission !== 'admin') { showToast('只有管理员可以设置角色密码'); return; }
+  const role = ROLES.find(r => r.id === roleId);
+  const rp = DATA.getRolePasswords();
+  const hasPw = !!rp[roleId];
+
+  const pw = prompt(hasPw ? `为"${role.label}"设置新密码（至少4位）` : `首次为"${role.label}"设置密码（至少4位）`);
+  if (!pw || pw.length < 4) { showToast('密码至少4个字符'); return; }
+  const confirm = prompt('确认密码');
+  if (pw !== confirm) { showToast('两次密码不一致'); return; }
+
+  const salt = randStr();
+  rp[roleId] = { passwordHash: hashPassword(pw, salt), salt: salt };
+  DATA.saveRolePasswords(rp);
+  showToast(`${role.label}密码已设置`);
+  renderSettings();
+}
+
+function saveSettings() {
+  const s = DATA.getSession();
+  const fa = DATA.getFamilyAccount();
+  if (!s || !fa) return;
+
+  const child = getCurrentChild();
+  if (!child) return;
+
+  const isAdmin = s.rolePermission === 'admin';
+  if (!isAdmin) return; // Only admin can save child profile
+
+  child.name = document.getElementById('childName').value;
+  child.studentNumber = document.getElementById('studentNumber').value;
+  child.nick = document.getElementById('childNick').value;
+  child.grade = document.getElementById('childGrade').value;
+  child.age = parseInt(document.getElementById('childAge').value)||7;
+  DATA.saveFamilyAccount(fa);
+  document.getElementById('headerChildName').textContent = child.name + ' 的成长日记';
+  document.getElementById('headerChildMeta').textContent = (child.grade||'')+' · '+(child.age||'')+'岁';
+}
+
+// Password-protected role switch dialog
+function showRoleSwitchDialog() {
+  _loginRoleId = null;
+  const s = DATA.getSession();
+  if (!s) return;
+
+  let html = '<h3>🔄 切换角色</h3><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0">';
+  ROLES.forEach(r => {
+    const isCurrent = s.roleId === r.id;
+    html += `<div class="login-role-btn" onclick="switchToRole('${r.id}')" style="${isCurrent?'border-color:#6b8f71;background:#f0f7f0':''}">
+      <span class="lricon">${r.icon}</span>
+      <span class="lrlabel">${r.label}</span>
+      ${isCurrent ? '<span style="font-size:9px;color:#6b8f71">当前</span>' : ''}
+    </div>`;
+  });
+  html += '</div>';
+  html += '<div id="switchPwPrompt" style="display:none;margin-top:12px">';
+  html += '<div class="input-group"><label id="switchPwLabel">输入密码</label><input type="password" id="switchPassword" placeholder="请输入密码" onkeydown="if(event.key===\'Enter\')confirmRoleSwitch()"></div>';
+  html += '<button class="btn btn-primary btn-block" onclick="confirmRoleSwitch()">确认切换</button>';
+  html += '<div class="login-back-link"><a onclick="closeModal()">← 返回</a></div>';
+  html += '<div id="switchError" style="color:#e74c3c;font-size:12px;text-align:center;margin-top:4px;display:none"></div>';
+  html += '</div>';
+
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function switchToRole(roleId) {
+  _loginRoleId = roleId;
+  const role = ROLES.find(r => r.id === roleId);
+  document.getElementById('switchPwLabel').textContent = role.permission === 'admin' ? '管理员密码' : (role.label + ' 密码');
+  document.getElementById('switchPwPrompt').style.display = '';
+  setTimeout(() => document.getElementById('switchPassword').focus(), 200);
+}
+
+function confirmRoleSwitch() {
+  try {
+    const pw = document.getElementById('switchPassword').value;
+    if (!pw) { showSwitchError('请输入密码'); return; }
+
+    const fa = DATA.getFamilyAccount();
+    const rp = DATA.getRolePasswords();
+    const targetRole = ROLES.find(r => r.id === _loginRoleId);
+    const s = DATA.getSession();
+
+    if (targetRole.permission === 'admin') {
+      if (hashPassword(pw, fa.adminPasswordSalt) !== fa.adminPasswordHash) { showSwitchError('管理员密码错误'); return; }
+    } else {
+      const entry = rp[_loginRoleId];
+      if (!entry) { showSwitchError('该角色尚未设置密码'); return; }
+      if (hashPassword(pw, entry.salt) !== entry.passwordHash) { showSwitchError('密码错误'); return; }
+    }
+
+    // Switch success
+    DATA.setSession({ childId: s.childId, roleId: _loginRoleId, rolePermission: targetRole.permission });
+    currentRoleIdx = ROLES.findIndex(r => r.id === _loginRoleId);
+    _loginRoleId = null;
+    closeModal();
+    initMainApp();
+    showToast('已切换到 ' + targetRole.label);
+  } catch(err) {
+    showSwitchError('切换失败：' + err.message);
+  }
+}
+
+function showSwitchError(msg) {
+  const el = document.getElementById('switchError');
+  if (!el) return;
+  el.textContent = msg; el.style.display = '';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function showManageChild() {
+  const fa = DATA.getFamilyAccount();
+  if (!fa) return;
+  const s = DATA.getSession();
+  const child = getCurrentChild();
+  let html = '<h3>👶 管理孩子</h3>';
+  fa.children.forEach(c => {
+    const isCurrent = c.id === s.childId;
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;margin:4px 0;background:#faf8f5;border-radius:8px">
+      <span style="font-size:13px">${isCurrent?'✅ ':''}👶 ${c.name} · ${c.grade||''} · 学号${c.studentNumber||'—'}</span>
+      <div>
+        <button class="btn btn-outline btn-sm" onclick="renameChildData('${c.id}')" style="padding:2px 8px;font-size:10px">改名</button>
+        ${fa.children.length > 1 ? `<button class="btn btn-danger btn-sm" onclick="deleteChildData('${c.id}')" style="padding:2px 8px;font-size:10px">删除</button>` : ''}
+      </div>
+    </div>`;
+  });
+  html += `<button class="btn btn-outline btn-sm btn-block" style="margin-top:8px" onclick="addNewChild()">+ 添加孩子</button>`;
+  html += '<div style="text-align:right;margin-top:10px"><button class="btn btn-primary btn-sm" onclick="closeModal();initMainApp();renderAll()">完成</button></div>';
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function renameChildData(cid) {
+  const fa = DATA.getFamilyAccount();
+  const child = fa.children.find(c => c.id === cid);
+  if (!child) return;
+  const name = prompt('新的姓名', child.name);
+  if (!name || !name.trim()) return;
+  child.name = name.trim();
+  DATA.saveFamilyAccount(fa);
+  showToast('已改名');
+  showManageChild();
+}
+
+function deleteChildData(cid) {
+  const fa = DATA.getFamilyAccount();
+  if (fa.children.length <= 1) { showToast('至少保留一个孩子'); return; }
+  const child = fa.children.find(c => c.id === cid);
+  if (!child) return;
+  if (!confirm(`确定删除"${child.name}"吗？该孩子的记录将被永久删除！`)) return;
+
+  ['records','achievements','settings'].forEach(k => localStorage.removeItem(`yd_${cid}_${k}`));
+  fa.children = fa.children.filter(c => c.id !== cid);
+  DATA.saveFamilyAccount(fa);
+
+  const s = DATA.getSession();
+  if (s.childId === cid) {
+    DATA.setSession({ childId: fa.children[0].id, roleId: s.roleId, rolePermission: s.rolePermission });
+  }
+  closeModal();
+  showToast('孩子已删除');
+  initMainApp();
+  renderAll();
+}
+
+function addNewChild() {
+  const name = prompt('请输入孩子姓名');
+  if (!name || !name.trim()) return;
+  const fa = DATA.getFamilyAccount();
+  const childId = 'c_' + uid();
+  fa.children.push({ id: childId, name: name.trim(), nick: name.trim(), grade: '小学一年级', age: 7, studentNumber: '1' });
+  DATA.saveFamilyAccount(fa);
+  showToast(`已添加 ${name.trim()}`);
+  showManageChild();
+}
+
+function resetAllData() {
+  if (!confirm('确定清除当前孩子的全部数据？此操作不可恢复！')) return;
+  ['records','achievements','settings'].forEach(k => localStorage.removeItem(DATA.sessionKey(k)));
+  showToast('数据已清除');
+  renderAll();
+}
+
+function switchTab(tab) {
+  // Tutor can only access record and settings
+  const s = DATA.getSession();
+  if (s && s.roleId === 'tutor' && tab !== 'record' && tab !== 'settings') {
+    tab = 'record';
+  }
+  currentTab = tab;
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pane-'+tab).classList.add('active');
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  const items = document.querySelectorAll('.tab-item');
+  const map = {timeline:0,learning:1,record:2,growth:3,settings:4};
+  if (items[map[tab]]) items[map[tab]].classList.add('active');
+  document.getElementById('phoneBody').scrollTop = 0;
+  if (tab==='learning') setTimeout(renderLearning,200);
+  if (tab==='growth') renderGrowth();
+  if (tab==='settings') renderSettings();
+}
+
+// ══════════════════════════════════════════════════════════
+//  DATA MIGRATION (old multi-account -> single family)
+// ══════════════════════════════════════════════════════════
+function migrateFromOld() {
+  const accounts = JSON.parse(localStorage.getItem('yd_accounts') || '{}');
+  if (!Object.keys(accounts).length) return false;
+  
+  const firstUsername = Object.keys(accounts)[0];
+  const firstAcc = accounts[firstUsername];
+  const families = JSON.parse(localStorage.getItem(`yd_${firstUsername}_families`) || '[]');
+  const firstFam = families[0] || { name: '小芽的家', children: [] };
+
+  // Create new family account
+  const familyAccount = {
+    adminPasswordHash: firstAcc.passwordHash, adminPasswordSalt: firstAcc.salt,
+    createdAt: firstAcc.createdAt || new Date().toISOString(),
+    familyName: firstFam.name || '小芽的家',
+    children: firstFam.children && firstFam.children.length > 0 ? firstFam.children : [{ id: 'c_' + uid(), name: '皓皓', nick: '小芽', grade: '小学一年级', age: 7, studentNumber: '29' }]
+  };
+  localStorage.setItem('yd_family_account', JSON.stringify(familyAccount));
+
+  // Create role passwords
+  const rolePasswords = { dad: { passwordHash: firstAcc.passwordHash, salt: firstAcc.salt }, mom: { passwordHash: firstAcc.passwordHash, salt: firstAcc.salt } };
+  localStorage.setItem('yd_role_passwords', JSON.stringify(rolePasswords));
+
+  // Migrate records for all families' children
+  families.forEach(fam => {
+    (fam.children||[]).forEach(child => {
+      const oldKey = `yd_${firstUsername}_${fam.id}_${child.id}`;
+      ['records','achievements','settings'].forEach(k => {
+        const old = localStorage.getItem(`${oldKey}_${k}`);
+        if (old) {
+          let data = JSON.parse(old);
+          // Fix: map 'teacher' role to 'tutor'
+          if (k === 'records') {
+            let changed = false;
+            data.forEach(r => { if (r.role === 'teacher') { r.role = 'tutor'; changed = true; } });
+            if (changed) old = JSON.stringify(data); // Actually, just store the parsed data
+          }
+          localStorage.setItem(`yd_${child.id}_${k}`, k === 'records' ? JSON.stringify(data) : old);
+        }
+      });
+    });
+  });
+
+  const firstChild = familyAccount.children[0];
+  DATA.setSession({ childId: firstChild.id, roleId: 'dad', rolePermission: 'admin' });
+  localStorage.setItem('yd_migration_done', 'true');
+  return true;
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+(function() {
+  // Data migration check
+  if (!localStorage.getItem('yd_migration_done') && localStorage.getItem('yd_accounts')) {
+    const migrated = migrateFromOld();
+    if (migrated) {
+      // Migrated successfully, enter app directly
+      document.getElementById('loginOverlay').classList.remove('show');
+      enterAppDirect();
+      showToast('数据已迁移至新系统');
+      return;
+    }
+  }
+
+  if (DATA.isLoggedIn()) {
+    document.getElementById('loginOverlay').classList.remove('show');
+    enterAppDirect();
+  } else {
+    showRoleGrid();
+  }
+})();
+</script>
+</body>
+</html>
